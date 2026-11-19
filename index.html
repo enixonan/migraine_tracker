@@ -1,0 +1,1369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aura migraine tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ECEBF2; --surface:#F8F7FB; --surface-2:#E3E1EC; --ink:#24222E; --muted:#5C586D; --line:#D2CFDD;
+  --accent:#574A93; --accent-ink:#FFFFFF; --accent-soft:#DDD8F1;
+  --attack:#9E3A5E; --attack-ink:#FFFFFF; --attack-soft:#F2DCE5;
+  --calm:#3B7462; --calm-ink:#FFFFFF; --calm-soft:#D4E7DF;
+  --warn:#7A500F; --warn-soft:#F4E6CB;
+  --c1:#6B5CB0; --c2:#B0507A; --c3:#3A8A7C; --c4:#C08A2E; --c5:#4A73B8; --c6:#7F8A3A; --unk:#CFCBDA;
+  --backdrop:rgba(24,22,34,.45);
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161F; --surface:#211F2C; --surface-2:#2C2A3A; --ink:#DEDBEA; --muted:#A39FB6; --line:#383549;
+    --accent:#A99BE6; --accent-ink:#17161F; --accent-soft:#322D4F;
+    --attack:#E58AA9; --attack-ink:#1E1219; --attack-soft:#44263A;
+    --calm:#7CC2A8; --calm-ink:#10201A; --calm-soft:#1F3830;
+    --warn:#E7BD70; --warn-soft:#3B3020;
+    --c1:#A99BE6; --c2:#E58AA9; --c3:#72C2B0; --c4:#E2B35F; --c5:#86A8E8; --c6:#B8C374; --unk:#3D3A50;
+    --backdrop:rgba(0,0,0,.6);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161F; --surface:#211F2C; --surface-2:#2C2A3A; --ink:#DEDBEA; --muted:#A39FB6; --line:#383549;
+  --accent:#A99BE6; --accent-ink:#17161F; --accent-soft:#322D4F;
+  --attack:#E58AA9; --attack-ink:#1E1219; --attack-soft:#44263A;
+  --calm:#7CC2A8; --calm-ink:#10201A; --calm-soft:#1F3830;
+  --warn:#E7BD70; --warn-soft:#3B3020;
+  --c1:#A99BE6; --c2:#E58AA9; --c3:#72C2B0; --c4:#E2B35F; --c5:#86A8E8; --c6:#B8C374; --unk:#3D3A50;
+  --backdrop:rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible","Segoe UI",system-ui,-apple-system,sans-serif;font-size:17px;line-height:1.5}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.45}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+p{margin:0 0 .6em}
+.app{max-width:560px;margin:0 auto;padding:0 18px calc(104px + env(safe-area-inset-bottom,0px))}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0 10px}
+.brand{display:flex;align-items:center;gap:8px;margin:0;font-size:22px;font-weight:700;letter-spacing:-.01em}
+.top-actions{display:flex;align-items:center;gap:8px}
+.sync{font-size:13px;color:var(--muted);margin-right:4px;white-space:nowrap}
+.icon-btn{width:44px;height:44px;display:grid;place-items:center;border-radius:12px;border:1.5px solid var(--line);background:transparent;color:var(--ink)}
+.icon-btn svg,.tab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+h2{font-size:21px;line-height:1.25;margin:30px 0 10px;letter-spacing:-.01em}
+h2.page-t{font-size:28px;margin:14px 0 14px}
+h3{font-size:15px;color:var(--muted);margin:22px 0 8px}
+.muted{color:var(--muted)}
+.small-t{font-size:14px}
+
+.start-btn{display:block;width:100%;min-height:118px;margin:6px 0 4px;padding:20px 22px;border:0;border-radius:22px;background:var(--attack);color:var(--attack-ink);text-align:left}
+.start-title{display:block;font-size:26px;font-weight:700;line-height:1.15}
+.start-sub{display:block;margin-top:8px;font-size:15px;opacity:.9}
+.ongoing{background:var(--attack-soft);border-radius:22px;padding:20px 20px 18px;margin:6px 0 4px}
+.ongoing .k{font-size:22px;font-weight:700;color:var(--attack);margin-bottom:2px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:14px 0}
+.card > :last-child{margin-bottom:0}
+.card.risk{background:var(--attack-soft);border-color:transparent}
+.card.warn{background:var(--warn-soft);border-color:transparent}
+.card.warn .card-t{color:var(--warn)}
+.card.risk .card-t{color:var(--attack)}
+.card.good{background:var(--calm-soft);border-color:transparent}
+.card-t{font-weight:700;font-size:18px;margin-bottom:6px}
+
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+.btn{min-height:48px;padding:0 18px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);font-weight:700}
+.btn.small{min-height:40px;padding:0 14px;font-size:15px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.attack{background:var(--attack);border-color:var(--attack);color:var(--attack-ink)}
+.btn.danger{color:var(--attack);border-color:var(--attack)}
+.btn.link{border:0;background:none;padding:0;min-height:44px;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.grow{flex:1}
+
+.daynav{display:flex;align-items:center;gap:8px;margin:26px 0 4px}
+.daynav .lbl{flex:1;min-width:0}
+.daynav .d1{font-size:24px;font-weight:700;line-height:1.2}
+.daynav .d2{font-size:14px;color:var(--muted)}
+.date-pick{position:relative;width:44px;height:44px}
+.date-pick input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.date-pick span{pointer-events:none}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;padding:8px 16px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);font-size:16px;line-height:1.25;text-align:left}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip.sign[aria-pressed="true"]{background:var(--calm);border-color:var(--calm);color:var(--calm-ink)}
+.chip.wide{width:100%;text-align:center}
+.group-note{font-size:14px;color:var(--muted);margin:-2px 0 10px;max-width:60ch}
+.add-row{display:flex;gap:8px;margin-top:10px}
+.add-row input{flex:1;min-width:0}
+
+/* Grouped lists, in the style of Apple Health */
+.gsec{margin:12px 0}
+.gcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+dialog .gcard{background:var(--bg)}
+.ghead{width:100%;display:flex;align-items:center;gap:12px;min-height:62px;padding:10px 14px;border:0;background:none;text-align:left;color:var(--ink)}
+.gicon{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:none;color:var(--surface)}
+.gicon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.gtitle{flex:1;min-width:0;font-weight:700;font-size:17px;line-height:1.25}
+.gsum{display:block;font-weight:400;font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gcount{min-width:24px;height:24px;padding:0 7px;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-size:13px;font-weight:700;display:grid;place-items:center;flex:none}
+.gchev{width:18px;height:18px;flex:none;fill:none;stroke:var(--muted);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .15s}
+.ghead[aria-expanded="true"] .gchev{transform:rotate(90deg)}
+.grow-row{position:relative;width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:50px;padding:11px 16px;border:0;background:none;text-align:left;font-size:17px;line-height:1.3;color:var(--ink)}
+.grow-row::before,.gadd::before{content:"";position:absolute;left:16px;right:0;top:0;border-top:1px solid var(--line)}
+.gcard > :first-child::before{display:none}
+.grow-row.in,.gadd.in{padding-left:58px}
+.grow-row.in::before,.gadd.in::before{left:58px}
+.tick{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center}
+.grow-row[aria-pressed="true"] .tick{background:var(--accent);border-color:var(--accent)}
+.grow-row.sign[aria-pressed="true"] .tick{background:var(--calm);border-color:var(--calm)}
+.grow-row[aria-pressed="true"] .tick::after{content:"";width:10px;height:5px;border-left:2.5px solid var(--accent-ink);border-bottom:2.5px solid var(--accent-ink);transform:translateY(-1px) rotate(-45deg)}
+.grow-row.sign[aria-pressed="true"] .tick::after{border-color:var(--calm-ink)}
+.gadd{position:relative;display:flex;align-items:center;gap:8px;padding:7px 10px 7px 16px}
+.gadd input{flex:1;min-width:0;border:0;background:none;padding:8px 0;min-height:40px}
+.gadd input:focus-visible{outline:none}
+.gadd:focus-within{box-shadow:inset 0 0 0 2px var(--accent)}
+.gfoot{font-size:13px;color:var(--muted);margin:6px 16px 0;line-height:1.4}
+.glabel{font-size:13px;color:var(--muted);margin:24px 16px 6px}
+.grow-row .stepper{gap:8px}
+.grow-row .stepper .icon-btn{width:36px;height:36px;border-radius:50%}
+.grow-row .stepper .v{min-width:52px;font-size:17px}
+.gnote{display:block;width:100%;border:0 !important;border-top:1px solid var(--line) !important;border-radius:0 !important;background:none !important;padding:12px 16px !important;min-height:84px}
+
+.field{display:block;font-weight:700;font-size:15px;margin:18px 0 6px}
+input[type=text],input[type=datetime-local],input[type=date],textarea{width:100%;min-height:48px;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg)}
+textarea{min-height:88px;resize:vertical}
+input[type=range]{width:100%;accent-color:var(--accent);height:36px}
+.check{display:flex;align-items:center;gap:10px;min-height:44px;font-weight:400}
+.check input{width:22px;height:22px;accent-color:var(--accent)}
+
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper .v{min-width:92px;text-align:center;font-size:20px;font-weight:700}
+
+.since{display:flex;align-items:flex-end;gap:14px;margin:6px 0 10px}
+.since-n{font-size:clamp(92px,30vw,140px);line-height:.82;font-weight:700;letter-spacing:-.05em;color:var(--accent)}
+.since-u{font-size:20px;line-height:1.25;padding-bottom:6px}
+.since-t{color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:18px 0}
+.stat{background:var(--surface);padding:12px 12px 10px}
+.stat-v{font-size:22px;font-weight:700;line-height:1.2}
+.stat-l{font-size:13px;color:var(--muted);line-height:1.3}
+
+.cal-h{display:flex;align-items:center;justify-content:space-between;margin:28px 0 8px}
+.cal-h h2{margin:0}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal .wd{font-size:12px;color:var(--muted);text-align:center;padding-bottom:2px}
+.cal button{aspect-ratio:1;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:15px;position:relative;padding:0}
+.cal button.logged::after{content:"";position:absolute;left:50%;bottom:5px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--accent)}
+.cal button.att{background:var(--attack-soft);border-color:transparent;background:color-mix(in srgb,var(--attack) calc(20% + var(--i) * 7%),var(--surface))}
+.cal button.att.strong{color:var(--attack-ink);font-weight:700}
+.cal button.att.logged::after{background:currentColor}
+.cal button.today{outline:2px solid var(--ink);outline-offset:-2px}
+.cal button.future{opacity:.45}
+.cal-key{display:flex;gap:18px;font-size:13px;color:var(--muted);margin-top:8px}
+.cal-key span{display:inline-flex;align-items:center;gap:6px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;flex:none}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+.tl{list-style:none;padding:0;margin:0}
+.tl li{padding:12px 0;border-bottom:1px solid var(--line)}
+.tl li:last-child{border-bottom:0}
+.tl .r1{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.tl .name{font-weight:700}
+.tl .num{font-size:14px;color:var(--muted);white-space:nowrap}
+.bar{height:8px;border-radius:99px;background:var(--surface-2);margin:8px 0 6px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--accent);border-radius:99px}
+.bar.sign span{background:var(--calm)}
+.tag{display:inline-block;font-size:13px;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--muted)}
+.tag.hi{background:var(--attack-soft);color:var(--attack);font-weight:700}
+.tag.lo{background:var(--calm-soft);color:var(--calm)}
+
+.mig{padding:16px 0;border-bottom:1px solid var(--line)}
+.mig:last-child{border-bottom:0}
+.mig-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.mig-d{font-weight:700;margin:0}
+.mig-m{font-size:15px;color:var(--muted);margin:2px 0 0}
+.stack{display:flex;height:14px;border-radius:99px;overflow:hidden;margin:12px 0 8px;background:var(--unk)}
+.stack span{display:block;height:100%}
+.stack span + span{border-left:2px solid var(--surface)}
+.legend{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px}
+.legend li{display:inline-flex;align-items:center;gap:6px}
+.signs{font-size:14px;color:var(--muted);margin:8px 0 0}
+
+.facts{list-style:none;padding:0;margin:0}
+.facts li{padding:12px 0;border-bottom:1px solid var(--line)}
+.facts li:last-child{border-bottom:0}
+.vbars{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:8px;align-items:end;margin-top:6px}
+.vbars .col{display:flex;flex-direction:column;align-items:center;gap:4px}
+.vbars .b{width:100%;max-width:34px;height:80px;display:flex;align-items:flex-end;background:var(--surface-2);border-radius:8px;overflow:hidden}
+.vbars .b span{display:block;width:100%;background:var(--accent)}
+.vbars .l{font-size:12px;color:var(--muted)}
+.vbars .c{font-size:12px;font-weight:700}
+
+.tips{margin:0;padding-left:1.2em}
+.tips li{margin:6px 0}
+.links{list-style:none;padding:0;margin:0}
+.links a{display:block;padding:12px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.links li:last-child a{border-bottom:0}
+.links .lt{color:var(--accent);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.links .ld{display:block;font-size:14px;color:var(--muted)}
+
+.empty{padding:10px 0}
+.empty .lead{font-size:22px;font-weight:700}
+
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabbar .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+.tab{min-height:62px;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:13px;color:var(--muted)}
+.tab[aria-current="page"]{color:var(--accent);font-weight:700}
+
+dialog{border:0;padding:0;border-radius:20px;width:min(560px,calc(100vw - 20px));max-height:calc(100% - 32px);background:var(--surface);color:var(--ink);overflow:auto}
+dialog::backdrop{background:var(--backdrop)}
+.sheet{padding:20px 20px 22px}
+.sheet h2{margin:0 0 4px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg .chip{flex:1;text-align:center;min-width:88px}
+.sheet-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.int-row{display:flex;align-items:center;gap:14px}
+.int-row output{font-size:24px;font-weight:700;min-width:54px;text-align:right}
+.manage{list-style:none;padding:0;margin:0}
+.manage li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+.manage li.off span{color:var(--muted);text-decoration:line-through}
+details summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700;color:var(--accent)}
+.steps{padding-left:1.3em;margin:6px 0}
+.steps li{margin:4px 0}
+
+.toast{position:fixed;left:50%;bottom:calc(78px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;max-width:min(520px,calc(100vw - 32px));background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:12px;font-size:15px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion: reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <p class="brand"><svg id="mark" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"></svg>Aura</p>
+    <div class="top-actions">
+      <span class="sync" id="sync" role="status">Connecting</span>
+      <button class="icon-btn" data-act="theme" aria-label="Switch between dim and light screen" title="Dim or light screen">
+        <svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+      </button>
+      <button class="icon-btn" data-act="settings" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 24 24"><path d="M4 7h9M19 7h1M4 17h3M13 17h7"/><circle cx="16" cy="7" r="2.5"/><circle cx="10" cy="17" r="2.5"/></svg>
+      </button>
+    </div>
+  </header>
+  <main id="view" tabindex="-1"></main>
+</div>
+
+<nav class="tabbar" aria-label="Pages">
+  <div class="in">
+    <button class="tab" data-act="tab" data-view="log"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Log</button>
+    <button class="tab" data-act="tab" data-view="history"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>History</button>
+    <button class="tab" data-act="tab" data-view="insights"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>Insights</button>
+  </div>
+</nav>
+
+<dialog id="attackDlg" aria-labelledby="attackTitle">
+  <div class="sheet">
+    <h2 id="attackTitle">Migraine details</h2>
+    <p class="muted small-t">Fill in what you can. Everything except the start time is optional.</p>
+    <label class="field" for="aStart">Started</label>
+    <input type="datetime-local" id="aStart">
+    <label class="check"><input type="checkbox" id="aOngoing"> Still going</label>
+    <label class="field" for="aEnd">Ended</label>
+    <input type="datetime-local" id="aEnd">
+    <label class="field" for="aInt">Worst pain</label>
+    <div class="int-row"><input type="range" id="aInt" min="1" max="10" step="1" value="5"><output id="aIntOut" for="aInt">5/10</output></div>
+    <p class="field">Aura (visual or other disturbance before or during)</p>
+    <div class="seg" data-seg="aura">
+      <button class="chip" data-act="seg" data-v="yes" aria-pressed="false">Yes</button>
+      <button class="chip" data-act="seg" data-v="no" aria-pressed="false">No</button>
+    </div>
+    <p class="field">Symptoms</p>
+    <div class="gcard" id="aSym"></div>
+    <label class="check" style="margin-top:14px"><input type="checkbox" id="aMeds"> I took medication for it</label>
+    <label class="field" for="aMedName">What you took</label>
+    <input type="text" id="aMedName" placeholder="Optional" autocomplete="off">
+    <p class="field">Relief</p>
+    <div class="seg" data-seg="relief">
+      <button class="chip" data-act="seg" data-v="none" aria-pressed="false">None</button>
+      <button class="chip" data-act="seg" data-v="some" aria-pressed="false">Some</button>
+      <button class="chip" data-act="seg" data-v="full" aria-pressed="false">Complete</button>
+    </div>
+    <label class="field" for="aNote">Notes</label>
+    <textarea id="aNote" placeholder="Anything else you noticed"></textarea>
+    <div class="sheet-actions">
+      <button class="btn primary grow" data-act="save-attack">Save migraine</button>
+      <button class="btn" data-act="close-dlg">Cancel</button>
+    </div>
+    <div class="sheet-actions" id="aDelWrap"><button class="btn danger" data-act="del-attack" id="aDel">Delete this migraine</button></div>
+  </div>
+</dialog>
+
+<dialog id="setDlg" aria-labelledby="setTitle"><div class="sheet" id="setBody"></div></dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- helpers ---------- */
+const $ = (s, r) => (r || document).querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const parseYmd = s => { const p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); };
+const addDays = (s, n) => { const d = parseYmd(s); d.setDate(d.getDate() + n); return ymd(d); };
+const daysBetween = (a, b) => Math.round((parseYmd(b) - parseYmd(a)) / 864e5);
+const monthKey = s => 'm-' + s.slice(0, 7);
+const localDT = d => ymd(d) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const todayStr = () => ymd(new Date());
+const hoursBetween = (a, b) => (new Date(b) - new Date(a)) / 36e5;
+const clone = o => JSON.parse(JSON.stringify(o));
+const lc = s => (s.length > 1 && s[1] === s[1].toUpperCase() && s[1] !== s[1].toLowerCase()) ? s : s.charAt(0).toLowerCase() + s.slice(1);
+const listJoin = a => a.length < 2 ? (a[0] || '') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+const pct = x => Math.round(x * 100) + '%';
+const avg = a => a.length ? a.reduce((s, v) => s + v, 0) / a.length : null;
+const round1 = x => Math.round(x * 10) / 10;
+
+function fmtDate(d, long) { return parseYmd(d).toLocaleDateString(undefined, long ? {weekday:'long', day:'numeric', month:'long', year:'numeric'} : {weekday:'short', day:'numeric', month:'short'}); }
+function fmtTime(dt) { return new Date(dt).toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'}); }
+function fmtDur(h) {
+  if (h < 1) return Math.max(1, Math.round(h * 60)) + ' min';
+  if (h < 24) { const H = Math.floor(h), M = Math.round((h - H) * 60); return M ? H + ' h ' + M + ' min' : H + ' h'; }
+  const D = Math.floor(h / 24), H = Math.round(h - D * 24); return H ? D + ' d ' + H + ' h' : D + ' d';
+}
+function fmtRel(dt) {
+  const d = dt.slice(0, 10), t = fmtTime(dt), today = todayStr();
+  const h = hoursBetween(dt, new Date());
+  const ago = h >= 0 ? ' (' + fmtDur(h) + ' ago)' : '';
+  if (d === today) return 'today at ' + t + ago;
+  if (d === addDays(today, -1)) return 'yesterday at ' + t + ago;
+  return fmtDate(d) + ' at ' + t + ago;
+}
+
+/* ---------- evidence-based item library ---------- */
+const CATS = [
+  ['stress', 'Stress and mood'],
+  ['sleep', 'Sleep, meals and routine'],
+  ['diet', 'Food and drink'],
+  ['env', 'Surroundings and weather'],
+  ['hormonal', 'Hormonal'],
+  ['body', 'Body'],
+  ['custom', 'Your own'],
+  ['sign', 'Early warning signs']
+];
+const CAT_NOTE = {
+  sign: 'These often start hours to a day before the pain. They are signals rather than causes: a chocolate craving, for example, can be an early sign that gets mistaken for a trigger.',
+  custom: 'Add anything you suspect plays a part. It will be analysed the same way as the built-in items.'
+};
+const LIB = [
+  {id:'stress', cat:'stress', label:'High stress'},
+  {id:'letdown', cat:'stress', label:'Relaxing after a stressful time'},
+  {id:'anxiety', cat:'stress', label:'Anxious or low mood'},
+  {id:'sleep_short', cat:'sleep', label:'Too little sleep'},
+  {id:'sleep_long', cat:'sleep', label:'Slept in or overslept'},
+  {id:'sleep_poor', cat:'sleep', label:'Poor-quality sleep'},
+  {id:'meal_skip', cat:'sleep', label:'Skipped or late meal'},
+  {id:'dehydration', cat:'sleep', label:'Not enough water'},
+  {id:'travel', cat:'sleep', label:'Travel or time-zone change'},
+  {id:'alcohol', cat:'diet', label:'Alcohol'},
+  {id:'redwine', cat:'diet', label:'Red wine'},
+  {id:'caffeine_more', cat:'diet', label:'More caffeine than usual'},
+  {id:'caffeine_less', cat:'diet', label:'Less caffeine than usual'},
+  {id:'cheese', cat:'diet', label:'Aged cheese'},
+  {id:'cured_meat', cat:'diet', label:'Cured or processed meat'},
+  {id:'chocolate', cat:'diet', label:'Chocolate'},
+  {id:'msg', cat:'diet', label:'MSG'},
+  {id:'sweetener', cat:'diet', label:'Artificial sweeteners'},
+  {id:'weather', cat:'env', label:'Weather or pressure change'},
+  {id:'heat', cat:'env', label:'Heat or humidity'},
+  {id:'light', cat:'env', label:'Bright or flickering light'},
+  {id:'screen', cat:'env', label:'Long screen time'},
+  {id:'smell', cat:'env', label:'Strong smells or smoke'},
+  {id:'noise', cat:'env', label:'Loud noise'},
+  {id:'period', cat:'hormonal', label:'Period (due soon or days 1 to 3)'},
+  {id:'ovulation', cat:'hormonal', label:'Ovulation'},
+  {id:'hormone_change', cat:'hormonal', label:'Change in hormonal medication'},
+  {id:'exercise', cat:'body', label:'Hard or unusual exercise'},
+  {id:'neck', cat:'body', label:'Neck or shoulder tension'},
+  {id:'ill', cat:'body', label:'Feeling unwell (cold, flu)'},
+  {id:'s_yawn', cat:'sign', label:'Frequent yawning'},
+  {id:'s_tired', cat:'sign', label:'Unusual tiredness'},
+  {id:'s_neck', cat:'sign', label:'Stiff neck'},
+  {id:'s_craving', cat:'sign', label:'Food cravings'},
+  {id:'s_mood', cat:'sign', label:'Irritable or low'},
+  {id:'s_focus', cat:'sign', label:'Hard to concentrate'},
+  {id:'s_urine', cat:'sign', label:'Needing to pee more'},
+  {id:'s_sensitive', cat:'sign', label:'Light or sound bothers me'}
+];
+const SYMPTOMS = [['nausea','Nausea'],['vomit','Vomiting'],['photo','Light sensitivity'],['phono','Sound sensitivity'],['oneside','One-sided pain'],['throb','Throbbing'],['dizzy','Dizziness'],['move','Worse with movement']];
+
+const TIPS = {
+  stress: 'Short daily wind-down habits (slow breathing, a walk, relaxation training) have evidence for lowering attack frequency. Cognitive behavioural therapy and biofeedback are also worth asking about.',
+  letdown: 'Attacks when stress eases, such as weekends or holidays, are common. Keep sleep, meal and caffeine times the same on days off.',
+  anxiety: 'Mood and migraine influence each other. Talking to your doctor about both together often helps more than treating either alone.',
+  sleep_short: 'Aim for the same bedtime and wake time every day, including weekends. Both too little and too much sleep are linked to attacks.',
+  sleep_long: 'Sleeping in can trigger attacks. Try to wake within an hour of your usual time, even on days off.',
+  sleep_poor: 'If you snore, wake unrefreshed or lie awake a lot, ask about sleep apnoea or insomnia treatment. Better sleep often means fewer migraines.',
+  meal_skip: 'Regular meals, including breakfast, help. Carry a snack for busy days so a delay does not become a skipped meal.',
+  dehydration: 'Keep water where you can see it and sip through the day, more in heat or after exercise.',
+  travel: 'When travelling, protect sleep and meal times, drink water, and keep your migraine medication in your hand luggage.',
+  alcohol: 'Try a few alcohol-free weeks while you keep logging, then compare. If you drink, keep amounts small and alternate with water.',
+  redwine: 'Try swapping red wine for something else for a few weeks and see whether your pattern changes.',
+  caffeine_more: 'The swing in caffeine matters as much as the amount. Keeping intake steady and moderate is usually advised.',
+  caffeine_less: 'Caffeine withdrawal is a known trigger. Keep your daily amount steady, and cut down slowly if you want to reduce it.',
+  cheese: 'Food triggers vary widely between people. Leave this out for a few weeks, then reintroduce it while logging. Avoid cutting many foods at once without advice.',
+  cured_meat: 'Food triggers vary widely between people. Leave this out for a few weeks, then reintroduce it while logging.',
+  chocolate: 'Check whether this is a craving before the attack (an early sign) rather than a cause. If it still stands out, try a few weeks without it.',
+  msg: 'Food triggers vary widely between people. Leave this out for a few weeks, then reintroduce it while logging.',
+  sweetener: 'Try a few weeks without artificial sweeteners while you keep logging, then compare.',
+  weather: 'You cannot change the weather, but on days when the forecast changes you can lower your other triggers: sleep, meals and water.',
+  heat: 'On hot days, drink more, find shade and cool rooms, and take more breaks.',
+  light: 'Sunglasses outdoors, lower screen brightness and avoiding flickering lights where you can may help.',
+  screen: 'Take regular screen breaks, lower brightness and check that your glasses prescription is up to date.',
+  smell: 'Where you can, avoid or ventilate. Letting people around you know can make this easier.',
+  noise: 'Earplugs or noise-cancelling headphones can help in loud places.',
+  period: 'Menstrual migraine is common and has specific treatment options, including short-term prevention around your period. Bring this log to your doctor.',
+  ovulation: 'Hormone-linked attacks have specific treatment options. Bring this log to your doctor.',
+  hormone_change: 'Mention this pattern to the doctor who prescribes your hormonal medication. Some options suit migraine better than others.',
+  exercise: 'Regular moderate exercise is linked to fewer migraines, but sudden hard efforts can trigger them. Warm up gradually, and eat and drink beforehand.',
+  neck: 'Regular breaks from desk posture, gentle stretching and physiotherapy may help.',
+  ill: 'Illness can lower your threshold. Rest, drink water and keep meals regular while you recover.',
+  custom: 'Try reducing this for a few weeks while you keep logging, then compare your pattern.'
+};
+const PUBMED_Q = {
+  stress:'migraine stress', letdown:'migraine stress', anxiety:'migraine anxiety depression',
+  sleep_short:'migraine sleep', sleep_long:'migraine sleep', sleep_poor:'migraine sleep',
+  meal_skip:'migraine fasting', dehydration:'migraine dehydration', travel:'migraine travel jet lag',
+  alcohol:'migraine alcohol', redwine:'migraine alcohol', caffeine_more:'migraine caffeine', caffeine_less:'migraine caffeine',
+  cheese:'migraine diet triggers', cured_meat:'migraine diet triggers', chocolate:'migraine chocolate', msg:'migraine diet triggers', sweetener:'migraine diet triggers',
+  weather:'migraine weather', heat:'migraine weather temperature', light:'migraine light photophobia', screen:'migraine screen time',
+  smell:'migraine odor osmophobia', noise:'migraine noise', period:'menstrual migraine', ovulation:'migraine hormones', hormone_change:'migraine hormonal contraception',
+  exercise:'migraine exercise', neck:'migraine neck pain', ill:'migraine infection'
+};
+const pubmed = q => 'https://pubmed.ncbi.nlm.nih.gov/?term=' + encodeURIComponent(q) + '&sort=date&filter=datesearch.y_1';
+
+/* ---------- state and storage ---------- */
+const LS_KEY = 'aura-tracker-v1', THEME_KEY = 'aura-theme';
+const DEFAULT_SETTINGS = () => ({custom: [], hidden: [], window: 1, lastBackup: null, backupSnooze: null});
+let S = {settings: DEFAULT_SETTINGS(), months: {}};
+let downloadsNs = null;
+const cur = {view: 'log', date: todayStr(), calMonth: todayStr().slice(0, 7), open: new Set()};
+try { JSON.parse(localStorage.getItem('aura-open') || '[]').forEach(c => cur.open.add(c)); } catch (e) {}
+const CAT_STYLE = {
+  stress: ['--c2', 'M3 12h4l2-5 4 10 2-5h6'],
+  sleep: ['--c1', 'M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z'],
+  diet: ['--c4', 'M5 8h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h1.5a2.5 2.5 0 0 1 0 5H16M8 3v2M12 3v2'],
+  env: ['--c5', 'M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4'],
+  hormonal: ['--c6', 'M20 12a8 8 0 1 1-2.3-5.7M20 4v4h-4'],
+  body: ['--c3', 'M12 3.5a1.8 1.8 0 1 0 0 3.6a1.8 1.8 0 1 0 0-3.6zM12 9v6M7 11h10M9 21l3-6 3 6'],
+  custom: ['--accent', 'M12 5v14M5 12h14'],
+  sign: ['--calm', 'M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15zM10 21h4']
+};
+let editing = null, delArmed = false, wipeArmed = false, pendingRender = false;
+
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+function normalize(p) {
+  const out = {settings: Object.assign(DEFAULT_SETTINGS(), (p && p.settings) || {}), months: {}};
+  const m = (p && p.months) || {};
+  for (const k in m) out.months[k] = {logs: m[k].logs || {}, attacks: m[k].attacks || {}};
+  return out;
+}
+function loadLocal() { const raw = lsGet(LS_KEY); if (!raw) return; try { S = normalize(JSON.parse(raw)); } catch (e) {} }
+function saveLocal() { return lsSet(LS_KEY, JSON.stringify(S)); }
+function hasData() {
+  if (S.settings.custom.length) return true;
+  for (const k in S.months) { const m = S.months[k]; if (Object.keys(m.logs).length || Object.keys(m.attacks).length) return true; }
+  return false;
+}
+function ensureMonth(mk) { return S.months[mk] || (S.months[mk] = {logs: {}, attacks: {}}); }
+
+/* ---------- private (end-to-end encrypted) sync ----------
+   The log is encrypted on this device with a key made from the person's passphrase (PBKDF2 → AES-GCM 256).
+   Only the encrypted result, the salt and a check value are saved to their Claude account. */
+const KDF_ITER = 600000, CHUNK = 180000;
+const Sync = {mode: 'checking', col: null, uid: null, key: null, keySalt: null, vault: null, docs: {}, legacy: {}, lastRev: null,
+  dirty: false, uploading: false, timer: null, busy: false, holdRemote: false, forgotArmed: false, err: ''};
+const canGz = typeof CompressionStream === 'function' && typeof DecompressionStream === 'function';
+const b64 = {
+  enc(u8) { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); },
+  dec(str) { const bin = atob(str), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+};
+async function deriveKey(pass, salt, iter) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass.normalize('NFKC')), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256'}, base, {name: 'AES-GCM', length: 256}, false, ['encrypt', 'decrypt']);
+}
+async function encBytes(key, u8) { const iv = crypto.getRandomValues(new Uint8Array(12)); return {iv, ct: new Uint8Array(await crypto.subtle.encrypt({name: 'AES-GCM', iv}, key, u8))}; }
+async function decBytes(key, iv, ct) { return new Uint8Array(await crypto.subtle.decrypt({name: 'AES-GCM', iv}, key, ct)); }
+async function gz(u8, compress) {
+  const stream = new Blob([u8]).stream().pipeThrough(compress ? new CompressionStream('gzip') : new DecompressionStream('gzip'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+async function makeCheck(key) { const r = await encBytes(key, new TextEncoder().encode('aura-ok')); return {iv: b64.enc(r.iv), ct: b64.enc(r.ct)}; }
+async function verifyKey(key, v) { try { return new TextDecoder().decode(await decBytes(key, b64.dec(v.check.iv), b64.dec(v.check.ct))) === 'aura-ok'; } catch (e) { return false; } }
+
+/* The key is remembered on this device only, as a non-exportable key in IndexedDB. */
+function idbOpen() { return new Promise((res, rej) => { const r = indexedDB.open('aura-keys', 1); r.onupgradeneeded = () => r.result.createObjectStore('k'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+async function keyGet(id) { try { const db = await idbOpen(); return await new Promise(res => { const q = db.transaction('k').objectStore('k').get(id); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); }); } catch (e) { return null; } }
+async function keyPut(id, val) { try { const db = await idbOpen(); await new Promise(res => { const t = db.transaction('k', 'readwrite'); t.objectStore('k').put(val, id); t.oncomplete = res; t.onerror = res; }); } catch (e) {} }
+async function keyDel(id) { try { const db = await idbOpen(); await new Promise(res => { const t = db.transaction('k', 'readwrite'); t.objectStore('k').delete(id); t.oncomplete = res; t.onerror = res; }); } catch (e) {} }
+
+function setSync() {
+  const el = $('#sync'); if (!el) return;
+  const m = Sync.mode;
+  const v = m === 'on' ? (Sync.uploading || Sync.dirty ? ['Saving', 'Encrypting and saving your change'] : ['Synced privately', 'Encrypted with your passphrase before it is saved']) :
+    m === 'signedout' ? ['On this device', 'Your log is stored only in this browser on this device'] :
+    m === 'setup' ? ['Not syncing', 'Create a passphrase to turn on private sync'] :
+    m === 'locked' ? ['Locked', 'Enter your passphrase to sync on this device'] :
+    m === 'error' ? ['Offline', 'Could not reach your account; changes are kept on this device'] : ['Connecting', 'Connecting'];
+  el.textContent = v[0]; el.title = v[1];
+}
+function persist() { saveLocal(); scheduleUpload(); }
+function scheduleUpload() {
+  if (Sync.mode !== 'on' || !Sync.key) return;
+  Sync.dirty = true; clearTimeout(Sync.timer); Sync.timer = setTimeout(upload, 700); setSync();
+}
+async function writeDoc(id, body) {
+  for (let attempt = 0; ; attempt++) {
+    try { await Sync.col.doc(id).set(body); return; }
+    catch (e) { if (e && e.code === 'unavailable' && attempt === 0) { await new Promise(r => setTimeout(r, 500 + Math.random() * 900)); continue; } throw e; }
+  }
+}
+async function upload() {
+  if (Sync.mode !== 'on' || !Sync.key) return false;
+  if (Sync.uploading) { Sync.dirty = true; return false; }
+  Sync.uploading = true; Sync.dirty = false; setSync();
+  let ok = false;
+  try {
+    let u = new TextEncoder().encode(JSON.stringify(S)), z = false;
+    if (canGz) { try { u = await gz(u, true); z = true; } catch (e) {} }
+    const enc = await encBytes(Sync.key, u), data = b64.enc(enc.ct);
+    const n = Math.max(1, Math.ceil(data.length / CHUNK)), rev = newId(), prevN = (Sync.vault && Sync.vault.n) || 0;
+    for (let i = 0; i < n; i++) await writeDoc('c' + i, {rev, d: data.slice(i * CHUNK, (i + 1) * CHUNK)});
+    Sync.lastRev = rev;
+    const vault = Object.assign({}, Sync.vault, {rev, iv: b64.enc(enc.iv), n, z});
+    await writeDoc('vault', vault);
+    Sync.vault = vault;
+    for (let i = n; i < prevN; i++) { try { await Sync.col.doc('c' + i).delete(); } catch (e) {} }
+    ok = true;
+  } catch (e) {
+    Sync.dirty = true;
+    const c = e && e.code;
+    if (c === 'quota_exceeded') toast('Your account storage for this page is full. Export your data from Settings.');
+    else if (c === 'revoked' || c === 'not_granted' || c === 'capability_disabled') { Sync.mode = 'error'; toast('Could not reach your account. Changes are kept on this device.'); }
+    else toast('That change could not sync yet. It is kept on this device and will sync next time.');
+  }
+  Sync.uploading = false;
+  if (Sync.dirty && Sync.mode === 'on') { clearTimeout(Sync.timer); Sync.timer = setTimeout(upload, ok ? 300 : 4000); }
+  setSync();
+  return ok;
+}
+async function readBlob(v) {
+  const parts = [];
+  for (let i = 0; i < v.n; i++) { const c = Sync.docs['c' + i]; if (!c || c.rev !== v.rev) return null; parts.push(c.d); }
+  try {
+    let u = await decBytes(Sync.key, b64.dec(v.iv), b64.dec(parts.join('')));
+    if (v.z) u = await gz(u, false);
+    return JSON.parse(new TextDecoder().decode(u));
+  } catch (e) { return 'bad'; }
+}
+
+/* Add entries from another copy without overwriting anything already present. Returns what changed. */
+function mergeIn(src) {
+  const touched = new Set();
+  const cs = (src && src.settings) || {};
+  (cs.custom || []).forEach(c => { if (c && c.id && !S.settings.custom.find(x => x.id === c.id)) { S.settings.custom.push(c); touched.add('settings'); } });
+  (cs.hidden || []).forEach(h => { if (S.settings.hidden.indexOf(h) < 0) { S.settings.hidden.push(h); touched.add('settings'); } });
+  const months = (src && src.months) || {};
+  for (const k in months) {
+    if (!/^m-\d{4}-\d{2}$/.test(k)) continue;
+    const m = ensureMonth(k), r = months[k] || {};
+    for (const d in (r.logs || {})) {
+      const o = r.logs[d], cur0 = m.logs[d];
+      if (!cur0) { m.logs[d] = o; touched.add(k); continue; }
+      // Same day logged in both copies: keep everything from both.
+      cur0.t = cur0.t || {};
+      for (const id in (o.t || {})) if (!cur0.t[id]) { cur0.t[id] = 1; touched.add(k); }
+      if (Object.keys(cur0.t).length) delete cur0.none; else if (o.none && !cur0.none) { cur0.none = true; touched.add(k); }
+      if (typeof cur0.sleep !== 'number' && typeof o.sleep === 'number') { cur0.sleep = o.sleep; touched.add(k); }
+      if (o.note && o.note !== cur0.note) { cur0.note = cur0.note ? (cur0.note.indexOf(o.note) >= 0 ? cur0.note : cur0.note + '\n' + o.note) : o.note; touched.add(k); }
+    }
+    for (const id in (r.attacks || {})) if (!m.attacks[id] && r.attacks[id] && r.attacks[id].start) { m.attacks[id] = r.attacks[id]; touched.add(k); }
+  }
+  return Array.from(touched);
+}
+function legacySource() {
+  const src = {settings: Sync.legacy.settings || null, months: {}};
+  for (const k in Sync.legacy) if (k.indexOf('m-') === 0) src.months[k] = Sync.legacy[k];
+  return src;
+}
+async function dropLegacy() { for (const k in Sync.legacy) { try { await Sync.col.doc(k).delete(); } catch (e) {} } Sync.legacy = {}; }
+
+async function initCapabilities() {
+  if (!window.claude || typeof window.claude.use !== 'function' || !window.crypto || !crypto.subtle) { Sync.mode = 'signedout'; setSync(); render(); return; }
+  claude.use('downloads').then(d => { downloadsNs = d; }).catch(() => {});
+  try {
+    const [db, user] = await Promise.all([claude.use('db'), claude.use('user')]);
+    const uid = db && user ? await user.id() : null;
+    if (!uid) { Sync.mode = 'signedout'; setSync(); render(); return; }
+    Sync.uid = uid; Sync.col = db.collection('data/users/' + uid);
+    const stored = await keyGet(uid);
+    let first = true;
+    Sync.col.onSnapshot(snap => {
+      if (first && snap.empty && snap.metadata && snap.metadata.fromCache) return;
+      const docs = {};
+      snap.docs.forEach(d => { if (d.exists) docs[d.id] = d.data(); });
+      Sync.docs = docs;
+      Sync.legacy = {};
+      for (const k in docs) if (k === 'settings' || k.indexOf('m-') === 0) Sync.legacy[k] = clone(docs[k]);
+      if (first) { first = false; if (stored && stored.key && docs.vault && stored.salt === docs.vault.salt) { Sync.key = stored.key; Sync.keySalt = stored.salt; } }
+      if (!Sync.holdRemote) Sync.vault = docs.vault ? clone(docs.vault) : null;
+      onRemote();
+    }, () => { Sync.mode = 'error'; setSync(); render(); });
+  } catch (e) { Sync.mode = 'error'; setSync(); render(); }
+}
+async function onRemote() {
+  if (Sync.holdRemote) return;
+  const v = Sync.vault;
+  if (!v) { Sync.key = null; Sync.mode = 'setup'; setSync(); render(); return; }
+  if (!Sync.key || Sync.keySalt !== v.salt) { Sync.key = null; Sync.mode = 'locked'; setSync(); render(); return; }
+  Sync.mode = 'on';
+  if (Object.keys(Sync.legacy).length) { if (mergeIn(legacySource()).length) { saveLocal(); scheduleUpload(); } dropLegacy(); }
+  if (v.rev && v.rev !== Sync.lastRev && !Sync.uploading) {
+    const st = await readBlob(v);
+    if (st === null) return; // the rest of this save has not arrived yet
+    if (st === 'bad') { toast('Could not read the synced log. Your entries on this device are safe.'); return; }
+    Sync.lastRev = v.rev;
+    if (!Sync.dirty) { S = normalize(st); saveLocal(); }
+  }
+  setSync(); render();
+}
+
+async function setupSync(pass, pass2, ack) {
+  if (Sync.busy) return;
+  if (pass.length < 10) { toast('Use at least 10 characters. A few unrelated words work well.'); return; }
+  if (pass !== pass2) { toast('The two passphrases do not match.'); return; }
+  if (!ack) { toast('Please tick the box to confirm you understand.'); return; }
+  Sync.busy = true; Sync.holdRemote = true; render(true);
+  try {
+    const salt = crypto.getRandomValues(new Uint8Array(16)), saltB = b64.enc(salt);
+    const key = await deriveKey(pass, salt, KDF_ITER);
+    const check = await makeCheck(key);
+    mergeIn(legacySource()); saveLocal();
+    Sync.key = key; Sync.keySalt = saltB; Sync.mode = 'on';
+    Sync.vault = {v: 1, kdf: 'PBKDF2-SHA256', iter: KDF_ITER, salt: saltB, check, n: 0};
+    const ok = await upload();
+    if (!ok) throw new Error('upload');
+    await keyPut(Sync.uid, {key, salt: saltB});
+    await dropLegacy();
+    toast('Private sync is on. Your log is encrypted before it leaves this device.');
+  } catch (e) {
+    Sync.key = null; Sync.keySalt = null; Sync.vault = null; Sync.mode = 'setup';
+    if (!(e && e.message === 'upload')) toast('Private sync could not be turned on. Please try again.');
+  }
+  Sync.busy = false; Sync.holdRemote = false; setSync(); render(true);
+}
+async function unlockSync(pass) {
+  const v = Sync.vault; if (!v || Sync.busy || !pass) return;
+  Sync.busy = true; render(true);
+  try {
+    const key = await deriveKey(pass, b64.dec(v.salt), v.iter || KDF_ITER);
+    if (!(await verifyKey(key, v))) { Sync.busy = false; render(true); toast('That passphrase does not match.'); const el = $('#unlockPass'); if (el) el.focus(); return; }
+    Sync.key = key; Sync.keySalt = v.salt;
+    let remote = v.rev ? await readBlob(v) : null;
+    if (v.rev && remote === null) { await new Promise(r => setTimeout(r, 1500)); remote = await readBlob(Sync.vault || v); }
+    if (v.rev && (remote === null || remote === 'bad')) { Sync.key = null; Sync.busy = false; render(true); toast('Could not load your synced log right now. Please try again in a moment.'); return; }
+    const localCopy = clone(S);
+    if (remote) S = normalize(remote);
+    const touched = mergeIn(localCopy).concat(mergeIn(legacySource()));
+    Sync.lastRev = v.rev || null; Sync.mode = 'on'; saveLocal();
+    await keyPut(Sync.uid, {key, salt: v.salt});
+    if (touched.length || !v.rev) await upload();
+    await dropLegacy();
+    toast('Unlocked. Your log syncs privately on this device now.');
+  } catch (e) { Sync.key = null; toast('Could not unlock. Please try again.'); }
+  Sync.busy = false; setSync(); render(true);
+}
+async function deleteSynced() {
+  const ids = Object.keys(Sync.docs).filter(k => k === 'vault' || /^c\d+$/.test(k) || k === 'settings' || k.indexOf('m-') === 0);
+  if (Sync.col) for (const k of ids) { try { await Sync.col.doc(k).delete(); } catch (e) {} }
+  if (Sync.uid) await keyDel(Sync.uid);
+  Sync.key = null; Sync.keySalt = null; Sync.vault = null; Sync.lastRev = null; Sync.dirty = false; Sync.legacy = {};
+}
+async function forgotPass() {
+  if (!Sync.forgotArmed) { Sync.forgotArmed = true; render(true); return; }
+  Sync.forgotArmed = false; Sync.busy = true; Sync.holdRemote = true; render(true);
+  await deleteSynced();
+  Sync.mode = 'setup'; Sync.busy = false; Sync.holdRemote = false; setSync(); render(true);
+  toast('Your encrypted log was deleted from your account. Entries on this device were kept. Create a new passphrase to sync again.');
+}
+async function lockDevice() {
+  if (Sync.dirty || Sync.uploading) { await upload(); }
+  if (Sync.uid) await keyDel(Sync.uid);
+  Sync.key = null; Sync.keySalt = null; Sync.lastRev = null;
+  S = {settings: DEFAULT_SETTINGS(), months: {}}; saveLocal();
+  Sync.mode = Sync.vault ? 'locked' : 'setup'; setSync();
+  $('#setDlg').close(); render(true);
+  toast('Locked. This device no longer holds your log or passphrase.');
+}
+
+function syncCard() {
+  const busy = Sync.busy ? ' disabled' : '';
+  if (Sync.mode === 'signedout') return backupDue() ? '<div class="card"><p class="card-t">Save a backup</p><p>Your log lives only on this device. Saving a copy to your Files app once a month protects it if your browser data is ever cleared.</p><div class="row"><button class="btn primary" data-act="backup">Save a backup</button><button class="btn" data-act="backup-later">Later</button></div></div>' : '';
+  if (Sync.mode === 'setup') return '<div class="card"><p class="card-t">Turn on private sync</p><p>Choose a passphrase. Your log is encrypted with it on this device before anything is saved, so nobody else can read it, including Claude and Anthropic. You enter it once on each device you use.</p>' +
+    '<label class="field" for="setPass">Passphrase</label><input type="password" id="setPass" autocomplete="new-password" placeholder="At least 10 characters">' +
+    '<label class="field" for="setPass2">Type it again</label><input type="password" id="setPass2" autocomplete="new-password">' +
+    '<label class="check" style="margin-top:10px"><input type="checkbox" id="setAck"> I understand that if I forget it, my synced log cannot be recovered by anyone.</label>' +
+    '<div class="row" style="margin-top:12px"><button class="btn primary" data-act="sync-setup"' + busy + '>' + (Sync.busy ? 'Encrypting…' : 'Turn on private sync') + '</button></div>' +
+    '<p class="muted small-t" style="margin-top:10px">Until then, entries are saved on this device only.</p></div>';
+  if (Sync.mode === 'locked') return '<div class="card"><p class="card-t">Unlock your log</p><p>Enter your passphrase to sync your log on this device.</p>' +
+    '<label class="field" for="unlockPass">Passphrase</label><input type="password" id="unlockPass" autocomplete="current-password">' +
+    '<div class="row" style="margin-top:12px"><button class="btn primary" data-act="sync-unlock"' + busy + '>' + (Sync.busy ? 'Unlocking…' : 'Unlock') + '</button>' +
+    '<button class="btn link" data-act="sync-forgot"' + busy + '>' + (Sync.forgotArmed ? 'Tap again to delete the synced log and start over' : 'Forgot it?') + '</button></div>' +
+    (Sync.forgotArmed ? '<p class="small-t" style="margin-top:8px">Without the passphrase, the synced log cannot be opened. Starting over deletes it from your account; anything already on this device is kept.</p>' : '') + '</div>';
+  return '';
+}
+
+/* ---------- items ---------- */
+function allItems() { return LIB.concat(S.settings.custom.map(c => ({id: c.id, cat: 'custom', label: c.label, removed: !!c.removed}))); }
+function itemById(id) { return allItems().find(i => i.id === id) || {id, cat: 'custom', label: 'Removed item'}; }
+const label = id => itemById(id).label;
+const isSign = id => itemById(id).cat === 'sign';
+
+/* ---------- data access ---------- */
+function getLogs() { const out = {}; for (const k in S.months) { const L = S.months[k].logs; for (const d in L) out[d] = L[d]; } return out; }
+function getAttacks() {
+  const arr = [];
+  for (const k in S.months) { const A = S.months[k].attacks; for (const id in A) arr.push(Object.assign({}, A[id], {id, mk: k})); }
+  return arr.filter(a => a.start).sort((a, b) => a.start < b.start ? -1 : a.start > b.start ? 1 : 0);
+}
+
+/* ---------- analysis ---------- */
+function analyze() {
+  const logs = getLogs(), attacks = getAttacks(), W = S.settings.window, today = todayStr();
+  const aDates = new Set(attacks.map(a => a.start.slice(0, 10)));
+  const followed = d => { for (let i = 0; i <= W; i++) if (aDates.has(addDays(d, i))) return true; return false; };
+  const isLogged = d => { const L = logs[d]; return !!L && (L.none || Object.keys(L.t || {}).length > 0); };
+  const logged = Object.keys(logs).filter(isLogged).sort();
+  const usable = logged.filter(d => d <= today && (followed(d) || addDays(d, W) < today));
+  const windowIds = a => {
+    const A = a.start.slice(0, 10), s = new Set();
+    for (let i = 0; i <= W; i++) { const L = logs[addDays(A, -i)]; if (L && L.t) Object.keys(L.t).forEach(k => s.add(k)); }
+    return Array.from(s);
+  };
+  const aw = attacks.map(a => ({a, ids: windowIds(a)}));
+  const ids = new Set();
+  logged.forEach(d => Object.keys(logs[d].t || {}).forEach(k => ids.add(k)));
+  const per = {};
+  ids.forEach(id => {
+    let ex = 0, exA = 0, un = 0, unA = 0;
+    usable.forEach(d => { const has = !!(logs[d].t && logs[d].t[id]); const f = followed(d); if (has) { ex++; if (f) exA++; } else { un++; if (f) unA++; } });
+    const present = aw.filter(x => x.ids.indexOf(id) >= 0).length;
+    const rr = ((exA + 0.5) / (ex + 1)) / ((unA + 0.5) / (un + 1));
+    const times = logged.filter(d => logs[d].t && logs[d].t[id]).length;
+    per[id] = {id, ex, exA, un, unA, rr, reliable: ex >= 3 && un >= 3 && attacks.length >= 3, present, presentPct: attacks.length ? present / attacks.length : 0, times};
+  });
+  const shares = a => {
+    const found = aw.find(x => x.a.id === a.id); const list = found ? found.ids : [];
+    const trig = list.filter(id => !isSign(id)), signs = list.filter(isSign);
+    const w = trig.map(id => { const p = per[id]; return p && p.reliable ? Math.max(0.25, p.rr) : 1; });
+    const total = w.reduce((s, v) => s + v, 0) + 1;
+    const parts = trig.map((id, i) => ({id, pct: w[i] / total})).sort((x, y) => y.pct - x.pct);
+    return {parts, unknown: 1 / total, signs};
+  };
+  const covered = a => {
+    const s = a.start.slice(0, 10), e = a.end ? a.end.slice(0, 10) : isOngoing(a) ? (s > today ? s : today) : s, out = [];
+    let d = s, g = 0; while (d <= e && g < 31) { out.push(d); d = addDays(d, 1); g++; } return out;
+  };
+  const since30 = addDays(today, -29), since60 = addDays(today, -59);
+  const mDays = new Set(), mPrev = new Set(), medDays = new Set();
+  attacks.forEach(a => covered(a).forEach(d => {
+    if (d >= since30 && d <= today) { mDays.add(d); if (a.meds) medDays.add(d); }
+    else if (d >= since60 && d < since30) mPrev.add(d);
+  }));
+  const ints = attacks.map(a => +a.intensity).filter(v => v > 0);
+  const durs = attacks.filter(a => a.end).map(a => hoursBetween(a.start, a.end)).filter(h => h > 0);
+  const weekday = [0, 0, 0, 0, 0, 0, 0], tod = [0, 0, 0, 0];
+  attacks.forEach(a => { const dt = new Date(a.start); weekday[(dt.getDay() + 6) % 7]++; tod[Math.floor(dt.getHours() / 6)]++; });
+  const sleepBefore = attacks.map(a => logs[a.start.slice(0, 10)] && logs[a.start.slice(0, 10)].sleep).filter(v => typeof v === 'number');
+  const sleepOther = Object.keys(logs).filter(d => !aDates.has(d) && typeof logs[d].sleep === 'number').map(d => logs[d].sleep);
+  const withMeds = attacks.filter(a => a.meds && a.relief);
+  const ongoing = attacks.filter(isOngoing).pop() || null;
+  const done = attacks.filter(a => !isOngoing(a));
+  return {
+    logs, attacks, logged, usable, per, shares, W, today,
+    last: attacks[attacks.length - 1] || null, lastDone: done[done.length - 1] || null, ongoing,
+    mDays30: mDays.size, mDaysPrev: mPrev.size, medDays30: medDays.size,
+    avgInt: avg(ints), avgDur: avg(durs), recentInt: avg(ints.slice(-5)), earlierInt: avg(ints.slice(0, -5)),
+    weekday, tod, sleepBefore: avg(sleepBefore), sleepBeforeN: sleepBefore.length, sleepOther: avg(sleepOther), sleepOtherN: sleepOther.length,
+    auraShare: attacks.length ? attacks.filter(a => a.aura === true).length / attacks.length : 0,
+    medFull: withMeds.filter(a => a.relief === 'full').length, medN: withMeds.length,
+    enough: attacks.length >= 5 && logged.length >= 14
+  };
+}
+const isOngoing = a => !a.end && !a.lenUnknown;
+const windowBefore = W => W === 0 ? 'on the day of a migraine' : W === 1 ? 'on the day of a migraine or the day before' : 'up to two days before a migraine';
+const windowPhrase = W => W === 0 ? 'on the same day' : W === 1 ? 'on the same day or the day after' : 'within two days';
+
+/* ---------- rendering ---------- */
+function render(force) {
+  const ae = document.activeElement;
+  if (!force && ae && ae.closest && ae.closest('#view') && ae.matches('textarea, input[type=text], input[type=password]')) { pendingRender = true; return; }
+  const fk = ae && ae.dataset ? ae.dataset.fk : null;
+  const html = cur.view === 'log' ? renderLog() : cur.view === 'history' ? renderHistory() : renderInsights();
+  $('#view').innerHTML = html;
+  document.querySelectorAll('.tab').forEach(t => { if (t.dataset.view === cur.view) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current'); });
+  if (fk) { const el = document.querySelector('#view [data-fk="' + fk.replace(/"/g, '') + '"]'); if (el) el.focus({preventScroll: true}); }
+  if ($('#setDlg').open) $('#setBody').innerHTML = renderSettings();
+}
+document.addEventListener('focusout', () => setTimeout(() => { if (pendingRender) { pendingRender = false; render(); } }, 0));
+
+function riskCard(an) {
+  const today = an.today, W = an.W, ids = new Set();
+  for (let i = 0; i <= W; i++) { const L = an.logs[addDays(today, -i)]; if (L && L.t) Object.keys(L.t).forEach(k => ids.add(k)); }
+  const hot = Array.from(ids).filter(id => !isSign(id) && an.per[id] && an.per[id].reliable && an.per[id].rr >= 1.5).sort((a, b) => an.per[b].rr - an.per[a].rr);
+  const todaySigns = Object.keys((an.logs[today] && an.logs[today].t) || {}).filter(isSign);
+  const hotSigns = todaySigns.filter(id => an.per[id] && an.attacks.length >= 3 && an.per[id].presentPct >= 0.4);
+  if (!hot.length && !hotSigns.length) return '';
+  let t = '';
+  if (hot.length) t += 'In your log, migraines have been more likely after ' + esc(listJoin(hot.map(id => lc(label(id))))) + ', which you logged recently. ';
+  if (hotSigns.length) t += esc(listJoin(hotSigns.map(label))) + ' came before ' + pct(an.per[hotSigns[0]].presentPct) + ' of your migraines. ';
+  return '<div class="card risk"><p class="card-t">Heads up for today</p><p>' + t + 'It may be a good day to eat regularly, drink water, keep screens dim, protect tonight’s sleep and have your usual migraine plan to hand.</p></div>';
+}
+
+function renderLog() {
+  const an = analyze(), today = an.today, d = cur.date;
+  const L = an.logs[d] || {}, t = L.t || {}, anyT = Object.keys(t).length > 0;
+  const hidden = S.settings.hidden;
+  let h = '';
+  if (an.ongoing) {
+    const o = an.ongoing;
+    h += '<div class="ongoing"><p class="k">Migraine in progress</p><p>Started ' + esc(fmtRel(o.start)) + ', intensity ' + esc(o.intensity || '?') + '/10.</p>' +
+      '<div class="row"><button class="btn attack grow" data-act="end-attack" data-id="' + o.id + '" data-mk="' + o.mk + '">It’s over</button>' +
+      '<button class="btn grow" data-act="edit-attack" data-id="' + o.id + '" data-mk="' + o.mk + '">Add details</button></div></div>';
+  } else {
+    h += '<button class="start-btn" data-act="start-attack"><span class="start-title">I have a migraine now</span><span class="start-sub">One tap records the start time. Add details whenever you feel up to it.</span></button>';
+  }
+  if (d === today) h += riskCard(an);
+  h += syncCard();
+  if (an.logged.length < 3) {
+    h += '<div class="card"><p class="card-t">How this works</p><p>Each day, tap anything below that applied. Ordinary days matter too: tap <strong>Nothing unusual today</strong> when nothing stands out, so the app can compare migraine days with good days. After a few weeks and a handful of migraines, History and Insights show your own patterns.</p></div>';
+  }
+  const isToday = d === today, isYest = d === addDays(today, -1);
+  h += '<div class="daynav">' +
+    '<button class="icon-btn" data-act="day-prev" aria-label="Previous day"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
+    '<div class="lbl"><div class="d1">' + (isToday ? 'Today' : isYest ? 'Yesterday' : esc(fmtDate(d))) + '</div><div class="d2">' + esc(fmtDate(d, true)) + '</div></div>' +
+    '<label class="date-pick icon-btn"><span><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span><input type="date" aria-label="Pick a date" data-act-change="pick-date" value="' + d + '" max="' + today + '"></label>' +
+    '<button class="icon-btn" data-act="day-next" aria-label="Next day"' + (isToday ? ' disabled' : '') + '><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>' +
+    '</div>';
+  if (!isToday) h += '<p><button class="btn link" data-act="day-today">Back to today</button></p>';
+  const dayAtt = an.attacks.filter(a => a.start.slice(0, 10) === d);
+  if (dayAtt.length) {
+    h += '<div class="card">' + dayAtt.map(a => '<div class="row between"><span>Migraine at ' + esc(fmtTime(a.start)) + ', ' + esc(a.intensity || '?') + '/10</span><button class="btn small" data-act="edit-attack" data-id="' + a.id + '" data-mk="' + a.mk + '">Edit</button></div>').join('') + '</div>';
+  }
+  h += '<h2>What happened ' + (isToday ? 'today' : 'this day') + '</h2>';
+  h += '<div class="gcard"><button class="grow-row" data-act="none" data-fk="none" aria-pressed="' + (!!L.none && !anyT) + '"' + (anyT ? ' disabled' : '') + '><span>Nothing unusual ' + (isToday ? 'today' : 'this day') + '</span><span class="tick" aria-hidden="true"></span></button></div>';
+  const items = allItems();
+  CATS.forEach(([cat, name]) => {
+    const list = items.filter(i => i.cat === cat && ((!i.removed && hidden.indexOf(i.id) < 0) || t[i.id]));
+    if (!list.length && cat !== 'custom') return;
+    const on = list.filter(i => t[i.id]), open = cur.open.has(cat), st = CAT_STYLE[cat] || CAT_STYLE.custom;
+    const sum = on.length ? on.map(i => i.label).join(', ') : (list.length ? list.length + ' item' + (list.length === 1 ? '' : 's') : 'Add your own');
+    h += '<section class="gsec"><div class="gcard">' +
+      '<button class="ghead" data-act="cat" data-cat="' + cat + '" data-fk="cat-' + cat + '" aria-expanded="' + open + '">' +
+      '<span class="gicon" style="background:var(' + st[0] + ')" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="' + st[1] + '"/></svg></span>' +
+      '<span class="gtitle">' + esc(name) + '<span class="gsum">' + esc(sum) + '</span></span>' +
+      (on.length ? '<span class="gcount" aria-label="' + on.length + ' logged">' + on.length + '</span>' : '') +
+      '<svg class="gchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>';
+    if (open) {
+      h += list.map(i => '<button class="grow-row in' + (cat === 'sign' ? ' sign' : '') + '" data-act="toggle" data-id="' + esc(i.id) + '" data-fk="t-' + esc(i.id) + '" aria-pressed="' + !!t[i.id] + '"><span>' + esc(i.label) + '</span><span class="tick" aria-hidden="true"></span></button>').join('');
+      if (cat === 'custom') h += '<div class="gadd in"><input type="text" id="customIn" placeholder="Add something else, e.g. long drive" maxlength="60" aria-label="Add your own item" autocomplete="off"><button class="btn small" data-act="add-custom">Add</button></div>';
+    }
+    h += '</div>';
+    if (open && CAT_NOTE[cat]) h += '<p class="gfoot">' + esc(CAT_NOTE[cat]) + '</p>';
+    h += '</section>';
+  });
+  const sl = typeof L.sleep === 'number' ? L.sleep : null;
+  h += '<p class="glabel">Sleep and notes</p><div class="gcard">' +
+    '<div class="grow-row"><span>Hours slept the night before</span><span class="stepper">' +
+    '<button class="icon-btn" data-act="sleep-minus" data-fk="sm" aria-label="Less sleep"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button>' +
+    '<span class="v" aria-live="polite">' + (sl == null ? '<span class="muted" style="font-weight:400">–</span>' : sl + ' h') + '</span>' +
+    '<button class="icon-btn" data-act="sleep-plus" data-fk="sp" aria-label="More sleep"><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button></span></div>' +
+    '<label class="sr" for="dayNote">Notes</label><textarea id="dayNote" class="gnote" data-act-change="note" placeholder="Notes about this day">' + esc(L.note || '') + '</textarea></div>';
+  if (sl != null) h += '<p class="gfoot"><button class="btn link" style="min-height:32px;font-size:13px" data-act="sleep-clear">Clear hours slept</button></p>';
+  h += '<p style="margin-top:18px"><button class="btn link" data-act="new-attack">Add a migraine that already happened</button></p>';
+  return h;
+}
+
+function renderCalendar(an) {
+  const parts = cur.calMonth.split('-').map(Number), y = parts[0], m = parts[1];
+  const first = new Date(y, m - 1, 1), n = new Date(y, m, 0).getDate(), off = (first.getDay() + 6) % 7;
+  const inten = {};
+  an.attacks.forEach(a => {
+    const s = a.start.slice(0, 10), e = a.end ? a.end.slice(0, 10) : isOngoing(a) ? (s > an.today ? s : an.today) : s;
+    let d = s, g = 0; while (d <= e && g < 31) { inten[d] = Math.max(inten[d] || 0, +a.intensity || 5); d = addDays(d, 1); g++; }
+  });
+  const loggedSet = new Set(an.logged);
+  const wd = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  let cells = wd.map(x => '<div class="wd" aria-hidden="true">' + x + '</div>').join('');
+  for (let i = 0; i < off; i++) cells += '<div></div>';
+  for (let day = 1; day <= n; day++) {
+    const ds = y + '-' + pad(m) + '-' + pad(day);
+    const cls = [], I = inten[ds];
+    if (I) cls.push('att'); if (I >= 7) cls.push('strong'); if (loggedSet.has(ds)) cls.push('logged');
+    if (ds === an.today) cls.push('today'); if (ds > an.today) cls.push('future');
+    const aria = fmtDate(ds) + (I ? ', migraine, worst ' + I + ' out of 10' : '') + (loggedSet.has(ds) ? ', logged' : '');
+    cells += '<button class="' + cls.join(' ') + '" style="--i:' + (I || 0) + '" data-act="cal-day" data-date="' + ds + '" aria-label="' + esc(aria) + '"' + (ds > an.today ? ' disabled' : '') + '>' + day + '</button>';
+  }
+  const title = first.toLocaleDateString(undefined, {month: 'long', year: 'numeric'});
+  const atMax = cur.calMonth >= an.today.slice(0, 7);
+  return '<div class="cal-h"><h2>' + esc(title) + '</h2><div class="row">' +
+    '<button class="icon-btn" data-act="cal-prev" aria-label="Previous month"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
+    '<button class="icon-btn" data-act="cal-next" aria-label="Next month"' + (atMax ? ' disabled' : '') + '><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div></div>' +
+    '<div class="cal">' + cells + '</div>' +
+    '<div class="cal-key"><span><i class="sw" style="background:var(--attack)"></i>Migraine day (darker is worse)</span><span><i class="dot"></i>Day logged</span></div>' +
+    '<p class="muted small-t" style="margin-top:6px">Tap a day to see or change what you logged.</p>';
+}
+
+function factorList(an, ids, sign) {
+  return '<ul class="tl">' + ids.map(id => {
+    const p = an.per[id];
+    let tag;
+    if (!p.reliable) tag = '<span class="tag">Too early to tell</span>';
+    else if (p.rr >= 1.5) tag = '<span class="tag hi">Migraines ' + round1(p.rr) + '× as likely after this</span>';
+    else if (p.rr <= 0.8) tag = '<span class="tag lo">Not linked so far</span>';
+    else tag = '<span class="tag">No clear link yet</span>';
+    return '<li><div class="r1"><span class="name">' + esc(label(id)) + '</span><span class="num">' + p.present + ' of ' + an.attacks.length + ' migraines</span></div>' +
+      '<div class="bar' + (sign ? ' sign' : '') + '"><span style="width:' + Math.round(p.presentPct * 100) + '%"></span></div>' + tag + '</li>';
+  }).join('') + '</ul>';
+}
+
+function renderHistory() {
+  const an = analyze(), A = an.attacks;
+  let h = '<h2 class="page-t">History</h2>';
+  if (!A.length) {
+    h += '<div class="empty"><p class="lead">No migraines logged yet.</p><p class="muted">When one starts, tap <strong>I have a migraine now</strong> on the Log page. You can also add past migraines so your history starts with what you remember.</p><button class="btn primary" data-act="new-attack">Add a past migraine</button></div>';
+    h += renderCalendar(an);
+    return h;
+  }
+  if (an.ongoing) {
+    h += '<div class="since"><span class="since-n">Now</span></div><p class="since-t">A migraine started ' + esc(fmtRel(an.ongoing.start)) + '.</p>';
+  } else {
+    const last = an.last, endD = (last.end || last.start).slice(0, 10), n = Math.max(0, daysBetween(endD, an.today));
+    h += '<div class="since"><span class="since-n">' + n + '</span><span class="since-u">' + (n === 1 ? 'day' : 'days') + ' since your<br>last migraine</span></div>' +
+      '<p class="since-t">It started ' + esc(fmtDate(last.start.slice(0, 10))) + ' at ' + esc(fmtTime(last.start)) + (last.end ? ' and lasted ' + esc(fmtDur(hoursBetween(last.start, last.end))) : '') + '.</p>';
+  }
+  h += '<div class="stats">' +
+    '<div class="stat"><div class="stat-v">' + an.mDays30 + '</div><div class="stat-l">migraine days in the last 30</div></div>' +
+    '<div class="stat"><div class="stat-v">' + (an.avgInt == null ? '–' : round1(an.avgInt) + '/10') + '</div><div class="stat-l">average worst pain</div></div>' +
+    '<div class="stat"><div class="stat-v">' + (an.avgDur == null ? '–' : esc(fmtDur(an.avgDur))) + '</div><div class="stat-l">average length</div></div></div>';
+  h += renderCalendar(an);
+
+  const ids = Object.keys(an.per).filter(id => an.per[id].present > 0);
+  const trig = ids.filter(id => !isSign(id)).sort((a, b) => an.per[b].present - an.per[a].present || an.per[b].rr - an.per[a].rr);
+  const signs = ids.filter(isSign).sort((a, b) => an.per[b].present - an.per[a].present);
+  h += '<h2>What came before your migraines</h2><p class="muted small-t">Counts anything you logged ' + windowBefore(an.W) + '. You can change this window in Settings.</p>';
+  if (!trig.length) h += '<p class="muted">Nothing logged near a migraine yet. Keep tapping what applies each day on the Log page.</p>';
+  else h += '<div class="card">' + factorList(an, trig.slice(0, 12), false) + '</div>';
+  if (signs.length) h += '<h3>Early signs before your migraines</h3><div class="card">' + factorList(an, signs, true) + '</div>';
+
+  h += '<h2>Each migraine</h2><p class="muted small-t">The bar estimates how much each logged factor may have contributed. Factors are weighted by how much more often migraines follow them in your own log; the grey part covers everything not logged. These are estimates, not proof of cause.</p>';
+  h += '<div class="card">' + A.slice().reverse().map(a => {
+    const sh = an.shares(a);
+    const meta = [];
+    if (a.end) meta.push(fmtDur(hoursBetween(a.start, a.end))); else meta.push(isOngoing(a) ? 'still going' : 'length not logged');
+    if (a.intensity) meta.push(a.intensity + '/10');
+    if (a.aura === true) meta.push('with aura');
+    if (a.meds) meta.push(a.relief === 'full' ? 'medication, full relief' : a.relief === 'some' ? 'medication, some relief' : a.relief === 'none' ? 'medication, no relief' : 'medication');
+    const colors = ['--c1', '--c2', '--c3', '--c4', '--c5', '--c6'];
+    const parts = sh.parts.slice(0, 6), extra = sh.parts.slice(6).reduce((s, p) => s + p.pct, 0);
+    const unk = sh.unknown + extra;
+    let stack = parts.map((p, i) => '<span style="width:' + (p.pct * 100) + '%;background:var(' + colors[i] + ')"></span>').join('') + '<span style="width:' + (unk * 100) + '%;background:var(--unk)"></span>';
+    let legend = parts.map((p, i) => '<li><i class="sw" style="background:var(' + colors[i] + ')"></i>' + esc(label(p.id)) + ' ' + pct(p.pct) + '</li>').join('') + '<li><i class="sw" style="background:var(--unk)"></i>Unexplained ' + pct(unk) + '</li>';
+    return '<article class="mig"><div class="mig-h"><div><p class="mig-d">' + esc(fmtDate(a.start.slice(0, 10))) + ', ' + esc(fmtTime(a.start)) + '</p><p class="mig-m">' + esc(meta.join(', ')) + '</p></div>' +
+      '<button class="btn small" data-act="edit-attack" data-id="' + a.id + '" data-mk="' + a.mk + '">Edit</button></div>' +
+      '<div class="stack" role="img" aria-label="Estimated contributions: ' + esc(parts.map(p => label(p.id) + ' ' + pct(p.pct)).join(', ') + (parts.length ? ', ' : '') + 'unexplained ' + pct(unk)) + '">' + stack + '</div>' +
+      '<ul class="legend" aria-hidden="true">' + legend + '</ul>' +
+      (sh.signs.length ? '<p class="signs">Early signs noticed: ' + esc(sh.signs.map(id => lc(label(id))).join(', ')) + '</p>' : '') + '</article>';
+  }).join('') + '</div>';
+  return h;
+}
+
+function careFlags(an) {
+  let h = '';
+  if (an.medDays30 >= 10) h += '<div class="card warn"><p class="card-t">Medication days</p><p>You took medication for a migraine on ' + an.medDays30 + ' of the last 30 days. Using acute headache medication on 10 or more days a month (15 or more for simple painkillers) can lead to medication-overuse headache. This is worth discussing with your doctor soon.</p></div>';
+  if (an.mDays30 >= 4) h += '<div class="card warn"><p class="card-t">Frequency</p><p>You had ' + an.mDays30 + ' migraine days in the last 30' + (an.mDays30 >= 15 ? ', which is in the range doctors call chronic migraine' : '') + '. At 4 or more a month, preventive treatment is often worth discussing with a doctor. Your History page is a useful summary to bring.</p></div>';
+  return h;
+}
+
+function renderInsights() {
+  const an = analyze();
+  let h = '<h2 class="page-t">Insights</h2>';
+  h += riskCard(an) + careFlags(an);
+
+  h += '<h2>Your likely triggers</h2>';
+  const flagged = Object.keys(an.per).filter(id => !isSign(id) && an.per[id].reliable && an.per[id].rr >= 1.5).sort((a, b) => an.per[b].rr - an.per[a].rr);
+  const cleared = Object.keys(an.per).filter(id => !isSign(id) && an.per[id].reliable && an.per[id].rr <= 0.8 && an.per[id].ex >= 5);
+  if (!an.enough && !flagged.length) {
+    const needA = Math.max(0, 5 - an.attacks.length), needD = Math.max(0, 14 - an.logged.length);
+    h += '<div class="card"><p class="card-t">Keep logging</p><p>Patterns become meaningful after about 5 migraines and 2 weeks of logged days. So far: ' + an.attacks.length + ' migraine' + (an.attacks.length === 1 ? '' : 's') + ' and ' + an.logged.length + ' logged day' + (an.logged.length === 1 ? '' : 's') + '.' +
+      (needA || needD ? ' Still to go: ' + [needA ? needA + ' more migraine' + (needA === 1 ? '' : 's') : '', needD ? needD + ' more logged day' + (needD === 1 ? '' : 's') : ''].filter(Boolean).join(' and ') + '.' : '') + '</p></div>';
+  } else if (!flagged.length) {
+    h += '<div class="card"><p>No single factor stands out yet. That is common: migraines often come from several smaller factors adding up. Keep logging ordinary days as well as bad ones.</p></div>';
+  }
+  flagged.forEach(id => {
+    const p = an.per[id], it = itemById(id);
+    h += '<div class="card"><p class="card-t">' + esc(it.label) + '</p><p>A migraine started ' + windowPhrase(an.W) + ' ' + p.exA + ' of the ' + p.ex + ' times you logged this, about ' + round1(p.rr) + '× as often as on other days.</p><p class="muted">' + esc(TIPS[id] || TIPS.custom) + '</p></div>';
+  });
+  if (cleared.length) h += '<div class="card good"><p class="card-t">Probably not a problem for you</p><p>So far, migraines have not followed ' + esc(listJoin(cleared.map(id => lc(label(id))))) + ' more often than other days. There may be no need to avoid ' + (cleared.length === 1 ? 'it' : 'them') + ', though this can change as you log more.</p></div>';
+
+  const facts = [];
+  if (an.attacks.length) {
+    const diff = an.mDays30 - an.mDaysPrev;
+    facts.push('<strong>' + an.mDays30 + ' migraine day' + (an.mDays30 === 1 ? '' : 's') + ' in the last 30 days</strong>, ' + (an.mDaysPrev === an.mDays30 ? 'the same as' : diff < 0 ? 'down from' : 'up from') + ' ' + an.mDaysPrev + ' in the 30 days before.');
+  }
+  if (an.recentInt != null && an.earlierInt != null) {
+    const dI = an.recentInt - an.earlierInt;
+    facts.push('<strong>Your last 5 migraines averaged ' + round1(an.recentInt) + '/10</strong>, ' + (Math.abs(dI) < 0.5 ? 'about the same as' : dI < 0 ? 'milder than' : 'stronger than') + ' earlier ones (' + round1(an.earlierInt) + '/10).');
+  }
+  if (an.attacks.length >= 6) {
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const mx = Math.max.apply(null, an.weekday), i = an.weekday.indexOf(mx);
+    if (mx / an.attacks.length >= 0.3) facts.push('<strong>' + mx + ' of your ' + an.attacks.length + ' migraines started on a ' + days[i] + '.</strong> Think about what is different about that day: sleep, workload, caffeine or meal times.');
+    const names = ['at night', 'in the morning', 'in the afternoon', 'in the evening'];
+    const mt = Math.max.apply(null, an.tod), j = an.tod.indexOf(mt);
+    if (mt / an.attacks.length >= 0.45) facts.push('<strong>Most of your migraines (' + mt + ' of ' + an.attacks.length + ') start ' + names[j] + '.</strong>');
+  }
+  if (an.sleepBeforeN >= 3 && an.sleepOtherN >= 5 && Math.abs(an.sleepBefore - an.sleepOther) >= 0.5) {
+    facts.push('<strong>You slept ' + round1(an.sleepBefore) + ' h on average before migraine days</strong>, compared with ' + round1(an.sleepOther) + ' h on other days.');
+  }
+  if (an.attacks.length >= 3 && an.auraShare > 0) facts.push('<strong>' + pct(an.auraShare) + ' of your migraines came with aura.</strong> If aura is new, changes, or lasts more than an hour, tell your doctor.');
+  if (an.medN >= 3) facts.push('<strong>Medication gave complete relief ' + an.medFull + ' of the ' + an.medN + ' times</strong> you logged the result. If it rarely works fully, ask your doctor about other options or timing.');
+  if (facts.length) h += '<h2>Trends</h2><div class="card"><ul class="facts">' + facts.map(f => '<li>' + f + '</li>').join('') + '</ul></div>';
+
+  if (an.attacks.length >= 3) {
+    const mxW = Math.max(1, Math.max.apply(null, an.weekday)), mxT = Math.max(1, Math.max.apply(null, an.tod));
+    const wl = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], tl = ['Night', 'Morning', 'Afternoon', 'Evening'];
+    const bars = (vals, labels, mx) => '<div class="vbars" style="--n:' + vals.length + '">' + vals.map((v, i) => '<div class="col"><span class="c">' + v + '</span><div class="b"><span style="height:' + Math.round(v / mx * 100) + '%"></span></div><span class="l">' + labels[i] + '</span></div>').join('') + '</div>';
+    h += '<h2>When migraines start</h2><div class="card"><p class="muted small-t">By day of the week</p>' + bars(an.weekday, wl, mxW) + '<p class="muted small-t" style="margin-top:16px">By time of day</p>' + bars(an.tod, tl, mxT) + '</div>';
+  }
+
+
+
+  h += '<h2>Good foundations</h2><div class="card"><p>These habits have the most support in migraine research and help most people, whatever their triggers:</p><ul class="tips">' +
+    '<li>Go to bed and wake at the same times every day, including weekends.</li>' +
+    '<li>Eat regular meals and do not skip breakfast.</li>' +
+    '<li>Drink water through the day.</li>' +
+    '<li>Get regular, moderate exercise rather than occasional hard sessions.</li>' +
+    '<li>Build in a daily way to manage stress, such as relaxation training or a walk.</li>' +
+    '<li>Keep acute medication to fewer than 10 days a month unless your doctor advises otherwise.</li>' +
+    '<li>Keep logging, and bring your History page to appointments.</li></ul></div>';
+
+  h += '<div class="card warn"><p class="card-t">Get urgent medical help if</p><p>a headache is sudden and severe (the worst ever, peaking within a minute), or comes with fever and a stiff neck, confusion, weakness or numbness on one side, trouble speaking, loss of vision, a seizure, or follows a head injury. Also see a doctor promptly about a new kind of headache, especially after age 50.</p></div>';
+
+  const topIds = flagged.slice(0, 3);
+  if (topIds.length < 3) Object.keys(an.per).filter(id => !isSign(id) && topIds.indexOf(id) < 0 && an.per[id].present > 0).sort((a, b) => an.per[b].present - an.per[a].present).slice(0, 3 - topIds.length).forEach(id => topIds.push(id));
+  const seenQ = new Set(), personal = [];
+  topIds.forEach(id => { const q = PUBMED_Q[id] || ('migraine ' + label(id)); if (!seenQ.has(q)) { seenQ.add(q); personal.push({t: 'New studies on ' + lc(label(id)) + ' and migraine', d: 'PubMed, published in the last year, newest first', u: pubmed(q)}); } });
+  const general = [
+    {t: 'All new migraine research', d: 'PubMed, published in the last year, newest first', u: pubmed('migraine')},
+    {t: 'New studies on migraine triggers', d: 'PubMed, published in the last year, newest first', u: pubmed('migraine triggers')},
+    {t: 'New studies on early warning signs', d: 'PubMed, research on the premonitory phase', u: pubmed('migraine premonitory symptoms')},
+    {t: 'New reviews of migraine treatment', d: 'PubMed, systematic reviews from the last year', u: pubmed('migraine treatment systematic review')},
+    {t: 'The Journal of Headache and Pain', d: 'Open-access journal, free to read', u: 'https://thejournalofheadacheandpain.biomedcentral.com/'},
+    {t: 'Cephalalgia', d: 'Journal of the International Headache Society', u: 'https://journals.sagepub.com/home/cep'},
+    {t: 'Headache', d: 'Journal of the American Headache Society', u: 'https://headachejournal.onlinelibrary.wiley.com/journal/15264610'},
+    {t: 'American Migraine Foundation', d: 'Plain-language guides and research news', u: 'https://americanmigrainefoundation.org/'},
+    {t: 'The Migraine Trust', d: 'UK charity with patient information', u: 'https://migrainetrust.org/'}
+  ];
+  const linkList = arr => '<ul class="links">' + arr.map(l => '<li><a href="' + esc(l.u) + '" target="_blank" rel="noopener noreferrer"><span class="lt">' + esc(l.t) + '</span><span class="ld">' + esc(l.d) + '</span></a></li>').join('') + '</ul>';
+  h += '<h2>Latest research</h2><p class="muted small-t">These links run live searches, so they always show the newest published papers rather than a fixed list.</p>';
+  if (personal.length) h += '<h3>Based on your log</h3><div class="card">' + linkList(personal) + '</div>';
+  h += '<h3>General</h3><div class="card">' + linkList(general) + '</div>';
+  h += '<p class="muted small-t" style="margin-top:22px">Aura is a personal log, not a medical device. Patterns here are associations in your own data, not proof of cause. Talk to your doctor before changing any treatment.</p>';
+  return h;
+}
+
+/* ---------- settings ---------- */
+function renderSettings() {
+  const W = S.settings.window;
+  const items = allItems().filter(i => !i.removed);
+  let h = '<h2 id="setTitle">Settings</h2>';
+  h += '<h3>How far back to look before a migraine</h3><p class="muted small-t">Anything logged in this window counts toward a migraine in History and Insights.</p><div class="seg">' +
+    [[0, 'Same day'], [1, 'Up to 1 day before'], [2, 'Up to 2 days before']].map(v => '<button class="chip" data-act="win" data-w="' + v[0] + '" aria-pressed="' + (W === v[0]) + '">' + v[1] + '</button>').join('') + '</div>';
+  h += '<h3>Tap-to-log with an NFC tag</h3><ol class="steps small-t"><li>Copy this page’s link from the share menu.</li><li>Use a free NFC writing app on your iPhone (for example NFC Tools) to write a URL record to your tag, pasting the link.</li><li>Stick the tag somewhere you will see it daily, like your bedside table. Hold the top of your iPhone near it and tap the notification that appears.</li></ol>';
+  h += '<h3>Items on the Log page</h3><details><summary>Show or hide items</summary><ul class="manage">' + items.map(i => {
+    const off = S.settings.hidden.indexOf(i.id) >= 0;
+    return '<li class="' + (off ? 'off' : '') + '"><span>' + esc(i.label) + '</span>' + (i.cat === 'custom' ? '<button class="btn small danger" data-act="del-custom" data-id="' + esc(i.id) + '">Remove</button>' : '<button class="btn small" data-act="hide-toggle" data-id="' + i.id + '">' + (off ? 'Show' : 'Hide') + '</button>') + '</li>';
+  }).join('') + '</ul></details>';
+  h += '<h3>Where your data is kept</h3>';
+  if (Sync.mode === 'on') h += '<p class="small-t">Private sync is on. Your log is encrypted on this device with your passphrase before it is saved to your Claude account, so Claude stores only scrambled data that nobody can read without your passphrase, including Anthropic. Claude can still see that encrypted data exists for your account, roughly how large it is, and when it was last saved.</p>' +
+    '<div class="row"><button class="btn" data-act="sync-lock">Lock this device</button></div><p class="muted small-t" style="margin-top:6px">Locking removes your log and passphrase from this device. Use it on a shared or borrowed device. Your synced log stays safe in your account.</p>';
+  else if (Sync.mode === 'setup') h += '<p class="small-t">Private sync is off, so entries are saved only on this device. Turn it on from the Log page.</p>';
+  else if (Sync.mode === 'locked') h += '<p class="small-t">Your synced log is locked on this device. Enter your passphrase on the Log page to unlock it.</p>';
+  else h += '<p class="small-t">Only on this device, in this browser. Nothing you log is sent anywhere or seen by anyone else. Because of that it does not sync to other devices and is lost if you clear your browser data, so keep a backup. ' + (S.settings.lastBackup ? 'Last backup: ' + esc(fmtDate(S.settings.lastBackup)) + '.' : 'You have not saved a backup yet.') + '</p>' +
+    '<div class="row"><button class="btn primary" data-act="backup">Save a backup</button>' +
+    '<label class="btn" style="display:inline-flex;align-items:center;position:relative;overflow:hidden">Restore from backup<input type="file" accept=".json,application/json" data-act-change="restore-file" aria-label="Choose a backup file" style="position:absolute;inset:0;opacity:0;cursor:pointer"></label></div>';
+  h += '<div class="row" style="margin-top:10px"><button class="btn" data-act="export">Export for your doctor (CSV)</button>' +
+    '<button class="btn danger" data-act="wipe">' + (wipeArmed ? 'Tap again to delete everything' : 'Delete all my data') + '</button></div><div id="csvFallback"></div>';
+  h += '<div class="sheet-actions"><button class="btn primary grow" data-act="close-dlg">Done</button></div>';
+  return h;
+}
+function buildCSV() {
+  const an = analyze(), rows = [['type', 'date', 'start', 'end', 'duration_hours', 'worst_pain_1_10', 'aura', 'symptoms', 'medication_taken', 'medication', 'relief', 'factors', 'hours_slept', 'notes']];
+  const symName = k => (SYMPTOMS.find(s => s[0] === k) || [k, k])[1];
+  const recs = [];
+  Object.keys(an.logs).forEach(d => { const L = an.logs[d]; recs.push({k: d + ' 0', r: ['day', d, '', '', '', '', '', '', '', '', '', L.none ? 'nothing unusual' : Object.keys(L.t || {}).map(label).join('; '), typeof L.sleep === 'number' ? L.sleep : '', L.note || '']}); });
+  an.attacks.forEach(a => {
+    const sh = an.shares(a);
+    recs.push({k: a.start.slice(0, 10) + ' 1', r: ['migraine', a.start.slice(0, 10), a.start.replace('T', ' '), a.end ? a.end.replace('T', ' ') : '', a.end ? round1(hoursBetween(a.start, a.end)) : '', a.intensity || '', a.aura === true ? 'yes' : a.aura === false ? 'no' : '', (a.sym || []).map(symName).join('; '), a.meds ? 'yes' : 'no', a.medName || '', a.relief || '', sh.parts.map(p => label(p.id)).concat(sh.signs.map(label)).join('; '), '', a.note || '']});
+  });
+  recs.sort((x, y) => x.k < y.k ? -1 : 1).forEach(x => rows.push(x.r));
+  return rows.map(r => r.map(v => { const s = String(v); return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(',')).join('\n');
+}
+function downloadFile(name, data, type) {
+  try {
+    const url = URL.createObjectURL(new Blob([data], {type}));
+    const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000); return true;
+  } catch (e) { return false; }
+}
+function saveBackup() {
+  const body = JSON.stringify({app: 'aura-migraine-tracker', version: 1, saved: new Date().toISOString(), settings: S.settings, months: S.months});
+  if (downloadFile('aura-backup-' + todayStr() + '.json', body, 'application/json')) {
+    S.settings.lastBackup = todayStr(); S.settings.backupSnooze = null; persist(); render();
+    toast('Backup saved. Keep it somewhere safe, such as the Files app.');
+  } else toast('The backup could not be saved in this browser.');
+}
+function restoreFrom(text) {
+  let p; try { p = JSON.parse(text); } catch (e) { toast('That file is not a backup from this tracker.'); return; }
+  if (!p || p.app !== 'aura-migraine-tracker' || !p.months) { toast('That file is not a backup from this tracker.'); return; }
+  const n = mergeIn({settings: p.settings, months: p.months}).length;
+  persist(); render();
+  toast(n ? 'Backup restored. Anything already on this device was kept.' : 'Everything in that backup is already on this device.');
+}
+function backupDue() {
+  if (!hasData()) return false;
+  const st = S.settings, today = todayStr();
+  if (st.backupSnooze && st.backupSnooze > today) return false;
+  return !st.lastBackup || daysBetween(st.lastBackup, today) >= 30;
+}
+async function doExport() {
+  const csv = buildCSV(), name = 'migraine-log-' + todayStr() + '.csv';
+  if (downloadsNs) {
+    try { const r = await downloadsNs.save({filename: name, data: csv}); if (r && r.status === 'saved') toast('Exported ' + name); return; }
+    catch (e) { if (e && e.code !== 'unavailable') return; }
+  }
+  if (downloadFile(name, csv, 'text/csv')) { toast('Exported ' + name); return; }
+  const box = $('#csvFallback');
+  if (box) { box.innerHTML = '<label class="field" for="csvText">Copy this into a spreadsheet or email</label><textarea id="csvText" readonly style="min-height:160px;font-size:13px"></textarea>'; $('#csvText').value = csv; $('#csvText').select(); }
+}
+async function wipeAll() {
+  Sync.holdRemote = true;
+  await deleteSynced();
+  S = {settings: DEFAULT_SETTINGS(), months: {}};
+  saveLocal();
+  Sync.holdRemote = false;
+  if (Sync.col) Sync.mode = 'setup';
+  wipeArmed = false; setSync(); toast('All data deleted.'); render();
+}
+
+/* ---------- attack dialog ---------- */
+const dlg = $('#attackDlg');
+function setSeg(name, v) { dlg.querySelectorAll('[data-seg="' + name + '"] .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === v))); }
+function getSeg(name) { const b = dlg.querySelector('[data-seg="' + name + '"] .chip[aria-pressed="true"]'); return b ? b.dataset.v : ''; }
+function openAttack(a, mk, isNew) {
+  editing = {id: a.id, mk, isNew}; delArmed = false;
+  $('#attackTitle').textContent = isNew ? 'Add a migraine' : 'Migraine details';
+  $('#aStart').value = a.start || '';
+  $('#aOngoing').checked = isOngoing(a) && !isNew;
+  $('#aEnd').value = a.end || '';
+  $('#aEnd').disabled = $('#aOngoing').checked;
+  $('#aInt').value = a.intensity || 5; $('#aIntOut').textContent = (a.intensity || 5) + '/10';
+  setSeg('aura', a.aura === true ? 'yes' : a.aura === false ? 'no' : '');
+  setSeg('relief', a.relief || '');
+  const sym = a.sym || [];
+  $('#aSym').innerHTML = SYMPTOMS.map(s => '<button class="grow-row" data-act="dlg-chip" data-v="' + s[0] + '" aria-pressed="' + (sym.indexOf(s[0]) >= 0) + '"><span>' + s[1] + '</span><span class="tick" aria-hidden="true"></span></button>').join('');
+  $('#aMeds').checked = !!a.meds; $('#aMedName').value = a.medName || ''; $('#aNote').value = a.note || '';
+  $('#aDelWrap').style.display = isNew ? 'none' : '';
+  $('#aDel').textContent = 'Delete this migraine';
+  dlg.showModal();
+}
+function saveAttack() {
+  if (!editing) return;
+  const start = $('#aStart').value, ongoing = $('#aOngoing').checked, end = ongoing ? null : ($('#aEnd').value || null);
+  if (!start) { toast('Add the start time to save.'); $('#aStart').focus(); return; }
+  if (end && end < start) { toast('The end time is before the start time.'); $('#aEnd').focus(); return; }
+  const aura = getSeg('aura');
+  const data = {
+    start, end: ongoing ? null : end, intensity: +$('#aInt').value,
+    aura: aura === 'yes' ? true : aura === 'no' ? false : null,
+    sym: Array.from($('#aSym').querySelectorAll('[aria-pressed="true"]')).map(b => b.dataset.v),
+    meds: $('#aMeds').checked, medName: $('#aMedName').value.trim().slice(0, 120), relief: getSeg('relief'),
+    note: $('#aNote').value.trim().slice(0, 2000), updated: Date.now()
+  };
+  if (!ongoing && !end) data.lenUnknown = true;
+  const newMk = monthKey(start.slice(0, 10));
+  if (editing.mk && editing.mk !== newMk && S.months[editing.mk]) { delete S.months[editing.mk].attacks[editing.id]; persist(editing.mk); }
+  ensureMonth(newMk).attacks[editing.id] = data;
+  persist(newMk);
+  dlg.close(); editing = null;
+  toast('Migraine saved.'); render();
+}
+function deleteAttack() {
+  if (!delArmed) { delArmed = true; $('#aDel').textContent = 'Tap again to delete'; return; }
+  if (editing && editing.mk && S.months[editing.mk]) { delete S.months[editing.mk].attacks[editing.id]; persist(editing.mk); }
+  dlg.close(); editing = null; toast('Migraine deleted.'); render();
+}
+$('#aOngoing').addEventListener('change', e => { $('#aEnd').disabled = e.target.checked; if (e.target.checked) $('#aEnd').value = ''; });
+$('#aInt').addEventListener('input', e => { $('#aIntOut').textContent = e.target.value + '/10'; });
+
+/* ---------- log actions ---------- */
+function dayLog(d, create) {
+  const m = create ? ensureMonth(monthKey(d)) : S.months[monthKey(d)];
+  if (!m) return null;
+  if (!m.logs[d] && create) m.logs[d] = {t: {}};
+  return m.logs[d] || null;
+}
+function tidyDay(d) {
+  const m = S.months[monthKey(d)]; if (!m) return; const L = m.logs[d]; if (!L) return;
+  if (!L.none && !Object.keys(L.t || {}).length && typeof L.sleep !== 'number' && !L.note) delete m.logs[d];
+}
+function touch(d) { const L = dayLog(d, true); L.updated = Date.now(); tidyDay(d); persist(monthKey(d)); }
+
+function startAttack() {
+  const now = new Date(), start = localDT(now), id = newId(), mk = monthKey(start.slice(0, 10));
+  ensureMonth(mk).attacks[id] = {start, end: null, intensity: 5, aura: null, sym: [], meds: false, medName: '', relief: '', note: '', updated: Date.now()};
+  persist(mk);
+  cur.date = todayStr();
+  render();
+  toast('Migraine logged at ' + fmtTime(start) + '. Add details when you feel up to it.');
+}
+function endAttack(id, mk) {
+  const a = S.months[mk] && S.months[mk].attacks[id]; if (!a) return;
+  let end = localDT(new Date()); if (end < a.start) end = a.start;
+  a.end = end; a.updated = Date.now(); persist(mk); render();
+  openAttack(Object.assign({}, a, {id}), mk, false);
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
+  const act = b.dataset.act, id = b.dataset.id;
+  switch (act) {
+    case 'tab': cur.view = b.dataset.view; render(true); window.scrollTo(0, 0); $('#view').focus({preventScroll: true}); break;
+    case 'start-attack': startAttack(); break;
+    case 'end-attack': endAttack(id, b.dataset.mk); break;
+    case 'edit-attack': { const a = S.months[b.dataset.mk] && S.months[b.dataset.mk].attacks[id]; if (a) openAttack(Object.assign({}, a, {id}), b.dataset.mk, false); break; }
+    case 'new-attack': {
+      const d = cur.view === 'log' ? cur.date : todayStr();
+      openAttack({id: newId(), start: d + 'T' + (d === todayStr() ? localDT(new Date()).slice(11) : '09:00'), intensity: 5}, null, true); break;
+    }
+    case 'cat': {
+      const c = b.dataset.cat; if (cur.open.has(c)) cur.open.delete(c); else cur.open.add(c);
+      lsSet('aura-open', JSON.stringify(Array.from(cur.open))); render(); break;
+    }
+    case 'toggle': {
+      const d = cur.date, L = dayLog(d, true); L.t = L.t || {};
+      if (L.t[id]) delete L.t[id]; else { L.t[id] = 1; delete L.none; }
+      touch(d); render(); break;
+    }
+    case 'none': { const d = cur.date, L = dayLog(d, true); if (L.none) delete L.none; else L.none = true; touch(d); render(); break; }
+    case 'sleep-minus': case 'sleep-plus': {
+      const d = cur.date, L = dayLog(d, true);
+      let v = typeof L.sleep === 'number' ? L.sleep : 7.5;
+      if (typeof L.sleep === 'number') v += act === 'sleep-plus' ? 0.5 : -0.5;
+      L.sleep = Math.min(16, Math.max(0, v)); touch(d); render(); break;
+    }
+    case 'sleep-clear': { const L = dayLog(cur.date, true); delete L.sleep; touch(cur.date); render(); break; }
+    case 'day-prev': cur.date = addDays(cur.date, -1); render(true); break;
+    case 'day-next': if (cur.date < todayStr()) { cur.date = addDays(cur.date, 1); render(true); } break;
+    case 'day-today': cur.date = todayStr(); render(true); break;
+    case 'add-custom': addCustom(); break;
+    case 'cal-prev': case 'cal-next': {
+      const p = cur.calMonth.split('-').map(Number), dt = new Date(p[0], p[1] - 1 + (act === 'cal-next' ? 1 : -1), 1);
+      cur.calMonth = dt.getFullYear() + '-' + pad(dt.getMonth() + 1); render(true); break;
+    }
+    case 'cal-day': cur.date = b.dataset.date; cur.view = 'log'; render(true); window.scrollTo(0, 0); break;
+    case 'theme': {
+      const eff = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      const next = eff === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = next; lsSet(THEME_KEY, next); break;
+    }
+    case 'settings': wipeArmed = false; $('#setBody').innerHTML = renderSettings(); $('#setDlg').showModal(); break;
+    case 'close-dlg': { const d = b.closest('dialog'); if (d) d.close(); break; }
+    case 'save-attack': saveAttack(); break;
+    case 'del-attack': deleteAttack(); break;
+    case 'dlg-chip': b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); break;
+    case 'seg': { const grp = b.closest('[data-seg]'); const was = b.getAttribute('aria-pressed') === 'true'; grp.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', 'false')); if (!was) b.setAttribute('aria-pressed', 'true'); break; }
+    case 'win': S.settings.window = +b.dataset.w; persist('settings'); render(); break;
+    case 'hide-toggle': { const h = S.settings.hidden, i = h.indexOf(id); if (i >= 0) h.splice(i, 1); else h.push(id); persist('settings'); render(); break; }
+    case 'del-custom': { const c = S.settings.custom.find(x => x.id === id); if (c) c.removed = true; persist('settings'); render(); toast('Removed. Past logs keep it.'); break; }
+    case 'export': doExport(); break;
+    case 'backup': saveBackup(); break;
+    case 'backup-later': S.settings.backupSnooze = addDays(todayStr(), 7); persist(); render(); break;
+    case 'sync-setup': setupSync(($('#setPass') || {}).value || '', ($('#setPass2') || {}).value || '', !!($('#setAck') || {}).checked); break;
+    case 'sync-unlock': unlockSync(($('#unlockPass') || {}).value || ''); break;
+    case 'sync-forgot': forgotPass(); break;
+    case 'sync-lock': lockDevice(); break;
+    case 'wipe': if (!wipeArmed) { wipeArmed = true; $('#setBody').innerHTML = renderSettings(); } else wipeAll(); break;
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset.actChange === 'pick-date' && t.value) { cur.date = t.value > todayStr() ? todayStr() : t.value; render(true); }
+  if (t.dataset.actChange === 'restore-file' && t.files && t.files[0]) { const r = new FileReader(); r.onload = () => restoreFrom(String(r.result)); r.onerror = () => toast('That file could not be read.'); r.readAsText(t.files[0]); t.value = ''; }
+  if (t.dataset.actChange === 'note') { const L = dayLog(cur.date, true); L.note = t.value.trim().slice(0, 2000); touch(cur.date); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (e.target.id === 'customIn') { e.preventDefault(); addCustom(); }
+  if (e.target.id === 'unlockPass') { e.preventDefault(); unlockSync(e.target.value); }
+  if (e.target.id === 'setPass2') { e.preventDefault(); const b = document.querySelector('[data-act="sync-setup"]'); if (b) b.click(); }
+});
+function addCustom() {
+  const inp = $('#customIn'); if (!inp) return;
+  const v = inp.value.trim().slice(0, 60); if (!v) { inp.focus(); return; }
+  const existing = allItems().find(i => i.label.toLowerCase() === v.toLowerCase() && !i.removed);
+  const L = dayLog(cur.date, true); L.t = L.t || {};
+  if (existing) { L.t[existing.id] = 1; }
+  else { const id = 'c_' + newId(); S.settings.custom.push({id, label: v}); persist('settings'); L.t[id] = 1; }
+  delete L.none; touch(cur.date); inp.value = ''; render(true);
+  toast('Added “' + v + '” and marked it for ' + (cur.date === todayStr() ? 'today' : fmtDate(cur.date)) + '.');
+}
+
+let toastTimer = null;
+function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 3800); }
+
+/* ---------- brand mark: an aura's zigzag arc ---------- */
+(function () {
+  const pts = []; const n = 11;
+  for (let i = 0; i < n; i++) { const a = (-215 + i * (230 / (n - 1))) * Math.PI / 180, r = i % 2 ? 8 : 12.5; pts.push((16 + r * Math.cos(a)).toFixed(1) + ' ' + (16 + r * Math.sin(a)).toFixed(1)); }
+  $('#mark').innerHTML = '<path d="M' + pts.join(' L') + '" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>';
+})();
+
+/* ---------- start ---------- */
+const savedTheme = lsGet(THEME_KEY); if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+loadLocal();
+render(true);
+initCapabilities();
+setInterval(() => { const t = todayStr(); if (t !== render._day) { if (render._day && cur.date === render._day) cur.date = t; render._day = t; render(); } }, 60000);
+render._day = todayStr();
+})();
+</script>
+</body>
+</html>
